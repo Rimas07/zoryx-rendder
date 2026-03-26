@@ -1,0 +1,11 @@
+.welcome-state {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; height: 100%; padding: 24px;
+}
+.welcome-card {
+  background: linear-gradient(135deg, rgba(110,95,200,0.65) 0%, rgba(75,130,220,0.65) 100%);
+  backdrop-filter: blur(16px); border-radius: var(--radius-xl);
+  padding: 44px 36px; max-width: 360px; text-align: center; color: #fff;
+}
+.welcome-card h2 { font-size: 26px; font-weight: 700; margin-bottom: 14px; line-height: 1.3; }
+.welcome-card p { font-size: 14px; line-height: 1.7; opacity: 0.92; }

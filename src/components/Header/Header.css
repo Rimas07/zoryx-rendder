@@ -1,0 +1,56 @@
+.header {
+  background: linear-gradient(90deg, #622ADA 0%, #0070BB 100%);
+  padding: 0 20px; height: 60px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  z-index: 200; gap: 16px;
+}
+
+.logo { display: flex; align-items: center; gap: 8px; flex-shrink: 0; cursor: pointer; }
+.logo-icon { height: 42px; width: auto; }
+.logo-text { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+
+.header-center { display: flex; align-items: center; gap: 10px; }
+
+.store-btn { display: flex; align-items: center; text-decoration: none; border-radius: 8px;  transition: opacity 0.15s; }
+.store-btn:hover { opacity: 0.85; }
+.store-img { height: 36px; width: auto; display: block; }
+
+.download-btn {
+  background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35);
+  color: #fff; font-size: 13px; font-weight: 500; white-space: nowrap;
+  padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: background 0.15s;
+}
+.download-btn:hover { background: rgba(255,255,255,0.28); }
+
+.header-map-toggle {
+  display: flex; align-items: center; gap: 8px;
+  color: #fff; font-size: 13px; font-weight: 500;
+  cursor: pointer; flex-shrink: 0; white-space: nowrap;
+}
+.toggle-switch {
+  width: 40px; height: 22px; border-radius: 11px;
+  background: rgba(255,255,255,0.3); position: relative;
+  transition: background 0.2s; flex-shrink: 0;
+}
+.toggle-switch.on { background: #4ade80; }
+.toggle-knob {
+  position: absolute; top: 3px; left: 3px;
+  width: 16px; height: 16px; border-radius: 50%; background: #fff;
+  transition: transform 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.toggle-switch.on .toggle-knob { transform: translateX(18px); }
+
+.lang-switcher {
+  position: relative; color: rgba(255,255,255,0.9);
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  flex-shrink: 0; user-select: none;
+}
+.lang-current { padding: 4px 10px; border: 1px solid rgba(255,255,255,0.4); border-radius: 6px; }
+.lang-dropdown {
+  position: absolute; top: calc(100% + 6px); right: 0;
+  background: #fff; border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18); overflow: hidden; min-width: 80px; z-index: 100;
+}
+.lang-option { padding: 10px 16px; color: #333; font-size: 14px; font-weight: 600; cursor: pointer; }
+.lang-option:hover { background: #f3f0ff; }
+.lang-option.active { color: #622ADA; }
