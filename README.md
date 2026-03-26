@@ -8,7 +8,7 @@ npm run build
 npm start
 ```
 
-
+ЕСЛИ ЛЕНЬ ТО https://zoryxweb-production.up.railway.app/
 
 ## Структура
 
