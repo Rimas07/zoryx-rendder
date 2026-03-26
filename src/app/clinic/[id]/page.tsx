@@ -1,7 +1,7 @@
 import { getClinic } from '../../../lib/firebase';
 import { notFound } from 'next/navigation';
 import { ClinicDetailWrapper } from '../../../components/ClinicDetailWrapper';
-
+//  не кеши
 export const dynamic = 'force-dynamic';
 
 interface Props {
