@@ -40,6 +40,14 @@
 }
 .toggle-switch.on .toggle-knob { transform: translateX(18px); }
 
+@media (max-width: 900px) {
+  .header { padding: 0 12px; gap: 8px; }
+  .logo-text { font-size: 18px; }
+  .logo-icon { height: 32px; }
+  .store-img { height: 26px; }
+  .header-center { gap: 6px; }
+}
+
 .lang-switcher {
   position: relative; color: rgba(255,255,255,0.9);
   font-size: 14px; font-weight: 600; cursor: pointer;
