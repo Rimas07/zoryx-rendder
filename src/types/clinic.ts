@@ -17,11 +17,11 @@ export interface Clinic {
   logoUrl?: string;
   rank: number;
   languages: string[];
-  specializations: string[];   // маппится из specializationsList
+  specializations: string[];  
   insurances?: string;
   updatedAt: string;
   altegioCompanyId?: string;
-  info?: ClinicInfo;           // реальное поле в Firestore
+  info?: ClinicInfo;          
 }
 
 export function getClinicInfo(clinic: Clinic, lang: string): string {
