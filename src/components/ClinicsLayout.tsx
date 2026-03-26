@@ -50,7 +50,7 @@ export function ClinicsLayout({ initialClinics }: Props) {
           onClose={() => setShowFilters(false)}
         />
       )}
-      <div className="main-layout">
+      <div className={`main-layout${selectedClinic ? ' show-detail' : ''}`}>
 
         {/* ── Left panel ── */}
         <div className="panel-left">
@@ -118,7 +118,7 @@ export function ClinicsLayout({ initialClinics }: Props) {
         {/* ── Right panel ── */}
         <div className="panel-right">
           {selectedClinic
-            ? <ClinicDetail key={selectedClinic.id} clinic={selectedClinic} />
+            ? <ClinicDetail key={selectedClinic.id} clinic={selectedClinic} onBack={() => setSelectedClinic(null)} />
             : <WelcomePanel />
           }
         </div>

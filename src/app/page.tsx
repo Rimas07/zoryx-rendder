@@ -1,8 +1,8 @@
 import { getClinics } from '../lib/firebase';
 import { ClinicsLayout } from '../components/ClinicsLayout';
 
-// Force SSR — не генерировать статически при билде
-export const dynamic = 'force-dynamic';
+
+export const dynamic = "force-static";
 
 export default async function HomePage() {
   const clinics = await getClinics().catch(() => []);

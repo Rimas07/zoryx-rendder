@@ -6,6 +6,7 @@ import {
 import type { Clinic } from '../types/clinic';
 import { MOCK_CLINICS } from './mockData';
 
+// podklucheniya k fb (env)
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -16,8 +17,29 @@ const firebaseConfig = {
 };
 
 
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+
+/* конвертация  данных с ФАЙЕРБЕЙЗ ПРИМЕР
+
+{
+  "fullName": "Canadian Medical Care",
+  "address": "Veleslavínská 1, Praha 6",
+  "updatedAt": Timestamp(seconds=1735689600),
+  "rank": 95,
+  "specializationsList": ["Cardiology", "Gynaecology"]
+  =====>
+  {
+  "id": "canadian-medical",
+  "name": "Canadian Medical Care",
+  "address": "Veleslavínská 1, Praha 6",
+  "updatedAt": "1/1/2025",
+  "rank": 95,
+  "specializations": ["Cardiology", "Gynaecology"]
+}
+}
+
+*/
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);// otkrit soedineniya
+export const db = getFirestore(app); // connect to db
 
 function docToClinic(id: string, data: Record<string, unknown>): Clinic {
   let updatedAt = '';
@@ -27,6 +49,7 @@ function docToClinic(id: string, data: Record<string, unknown>): Clinic {
     updatedAt = data.updatedAt;
   }
 
+  
   return {
     id,
     name: (data.fullName || data.name) as string || id,
@@ -45,6 +68,7 @@ function docToClinic(id: string, data: Record<string, unknown>): Clinic {
   };
 }
 
+// ПОЛУЧЕНИЕ ДАННЫЗХ С ФАЙЕРБЕЙЗ СЕЙЧАС ТОЛЬКО МОК  !!!!!
 export async function getClinics(): Promise<Clinic[]> {
   try {
     const q = query(collection(db, 'clinics'), orderBy('rank', 'desc'));
@@ -56,6 +80,9 @@ export async function getClinics(): Promise<Clinic[]> {
   }
 }
 
+
+
+// TOJE SAMOE
 export async function getClinic(id: string): Promise<Clinic | null> {
   try {
     const ref = doc(db, 'clinics', id);

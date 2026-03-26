@@ -3,7 +3,7 @@
 import {
   Phone, MessageCircle, Heart,
   Umbrella, Stethoscope, BookOpen,
-  Mail, MapPin, Globe,
+  Mail, MapPin, Globe, ArrowLeft,
 } from 'lucide-react';
 import { useLang } from '../../contexts/LangContext';
 import { getClinicInfo } from '../../types/clinic';
@@ -12,9 +12,10 @@ import './ClinicDetail.css';
 
 interface Props {
   clinic: Clinic;
+  onBack?: () => void;
 }
 
-export function ClinicDetail({ clinic }: Props) {
+export function ClinicDetail({ clinic, onBack }: Props) {
   const { t, lang } = useLang();
   const infoHtml = getClinicInfo(clinic, lang);
 
@@ -24,6 +25,11 @@ export function ClinicDetail({ clinic }: Props) {
       {/* ================= HERO SECTION ================= */}
 
       <div className="detail-hero">
+        {onBack && (
+          <button className="detail-back-btn" onClick={onBack}>
+            <ArrowLeft size={20} />
+          </button>
+        )}
         <button className="detail-heart-btn">
           <Heart size={22} className="heart-filled" />
         </button>

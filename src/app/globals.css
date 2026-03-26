@@ -97,4 +97,26 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 @media (max-width: 900px) {
   .main-layout { grid-template-columns: 1fr; }
   .panel-right { display: none; }
+  .main-layout.show-detail .panel-left { display: none; }
+  .main-layout.show-detail .panel-right { display: flex; }
+}
+
+.detail-back-btn {
+  display: none;
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(255,255,255,0.8);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-main);
+}
+
+@media (max-width: 900px) {
+  .detail-back-btn { display: flex; }
 }

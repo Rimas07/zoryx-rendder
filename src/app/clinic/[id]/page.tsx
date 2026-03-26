@@ -1,8 +1,13 @@
-import { getClinic } from '../../../lib/firebase';
+import { getClinic, getClinics } from '../../../lib/firebase';
 import { notFound } from 'next/navigation';
 import { ClinicDetailWrapper } from '../../../components/ClinicDetailWrapper';
-//  не кеши
-export const dynamic = 'force-dynamic';
+
+export const dynamic = 'force-static';
+
+export async function generateStaticParams() {
+  const clinics = await getClinics();
+  return clinics.map(c => ({ id: c.id }));
+}
 
 interface Props {
   params: { id: string };
