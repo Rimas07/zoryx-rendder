@@ -4,7 +4,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Zoryx — Медицинские клиники в Праге',
-  description: 'Найдите англоязычную медицинскую клинику в Праге',
+  description: '',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
