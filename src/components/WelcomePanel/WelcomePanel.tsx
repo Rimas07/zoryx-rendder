@@ -1,3 +1,5 @@
+'use client';
+
 import { useLang } from '../../contexts/LangContext';
 import './WelcomePanel.css';
 

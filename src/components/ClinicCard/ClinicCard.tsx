@@ -1,3 +1,5 @@
+'use client';
+
 import { Phone, MessageCircle, Heart } from 'lucide-react';
 import { useLang } from '../../contexts/LangContext';
 import type { Clinic } from '../../types/clinic';

@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Phone, MessageCircle, Heart,
   Umbrella, Stethoscope, BookOpen,

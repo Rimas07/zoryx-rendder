@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { useLang } from '../../contexts/LangContext';
 import type { Lang } from '../../i18n';

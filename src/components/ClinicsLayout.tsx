@@ -1,19 +1,23 @@
+'use client';
+
 import { useState } from 'react';
 import { Search, SlidersHorizontal, X, ChevronLeft } from 'lucide-react';
-import { useClinics } from './hooks/useClinics';
-import { getClinic } from './lib/firebase';
-import type { Clinic } from './types/clinic';
-import { LangProvider, useLang } from './contexts/LangContext';
-import { Header } from './components/Header/Header';
-import { FilterPanel } from './components/FilterPanel/FilterPanel';
-import { ClinicCard } from './components/ClinicCard/ClinicCard';
-import { ClinicDetail } from './components/ClinicDetail/ClinicDetail';
-import { WelcomePanel } from './components/WelcomePanel/WelcomePanel';
-import './index.css';
+import { useClinics } from '../hooks/useClinics';
+import type { Clinic } from '../types/clinic';
+import { useLang } from '../contexts/LangContext';
+import { Header } from './Header/Header';
+import { FilterPanel } from './FilterPanel/FilterPanel';
+import { ClinicCard } from './ClinicCard/ClinicCard';
+import { ClinicDetail } from './ClinicDetail/ClinicDetail';
+import { WelcomePanel } from './WelcomePanel/WelcomePanel';
 
-function AppInner() {
+interface Props {
+  initialClinics: Clinic[];
+}
+
+export function ClinicsLayout({ initialClinics }: Props) {
   const { t } = useLang();
-  const { clinics, loading, error, search, setSearch } = useClinics();
+  const { clinics, search, setSearch } = useClinics(initialClinics);
 
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -25,15 +29,6 @@ function AppInner() {
 
   const handleApply = () => { setActiveSpecs(pendingSpecs); setShowFilters(false); };
   const handleReset = () => { setPendingSpecs([]); setActiveSpecs([]); };
-
-  const handleSelectClinic = async (clinic: Clinic) => {
-    if (!clinic.info) {
-      const full = await getClinic(clinic.id);
-      setSelectedClinic(full || clinic);
-    } else {
-      setSelectedClinic(clinic);
-    }
-  };
 
   const displayed = activeSpecs.length === 0
     ? clinics
@@ -59,7 +54,6 @@ function AppInner() {
 
         {/* ── Left panel ── */}
         <div className="panel-left">
-
           <div className="search-area">
             <div className="search-row">
               <div className="search-bar">
@@ -102,31 +96,20 @@ function AppInner() {
           )}
 
           <div className="clinics-list">
-            {loading && (
-              <div className="state-center">
-                <div className="spinner" />
-                <p>{t('loading')}</p>
-              </div>
-            )}
-            {error && (
-              <div className="state-center">
-                <p style={{ color: '#e24b4a' }}>{t('failedToLoad')} {error}</p>
-              </div>
-            )}
-            {!loading && displayed.length === 0 && (
+            {displayed.length === 0 && (
               <div className="state-center">
                 <div className="state-icon">🔍</div>
                 <h4>{t('noResults')}</h4>
                 <p>{t('noResultsHint')}</p>
               </div>
             )}
-            {!loading && displayed.map(clinic => (
+            {displayed.map(clinic => (
               <ClinicCard
                 key={clinic.id}
                 clinic={clinic}
                 isActive={selectedClinic?.id === clinic.id}
                 activeSpecs={activeSpecs}
-                onClick={() => handleSelectClinic(clinic)}
+                onClick={() => setSelectedClinic(clinic)}
               />
             ))}
           </div>
@@ -141,13 +124,5 @@ function AppInner() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function App() {
-  return (
-    <LangProvider>
-      <AppInner />
-    </LangProvider>
   );
 }

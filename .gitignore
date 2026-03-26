@@ -6,3 +6,7 @@ node_modules/
 
 
 dist/
+
+# Next.js
+.next/
+out/
