@@ -6,6 +6,7 @@ import {
 import type { Clinic } from '../types/clinic';
 import { MOCK_CLINICS } from './mockData';
 
+// ключи доступа с энвв
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -14,7 +15,7 @@ const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
-
+// initialization
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
