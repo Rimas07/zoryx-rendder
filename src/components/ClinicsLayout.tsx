@@ -18,6 +18,7 @@ interface Props {
 export function ClinicsLayout({ initialClinics }: Props) {
   const { t } = useLang();
   const { clinics, search, setSearch } = useClinics(initialClinics);
+  const allSpecs = Array.from(new Set(clinics.flatMap(c => c.specializations))).sort();
 
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -43,6 +44,7 @@ export function ClinicsLayout({ initialClinics }: Props) {
       <Header onLogoClick={() => setSelectedClinic(null)} />
       {showFilters && (
         <FilterPanel
+          specs = {allSpecs}
           selected={pendingSpecs}
           onToggle={handleToggleSpec}
           onApply={handleApply}
