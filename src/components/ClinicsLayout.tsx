@@ -13,12 +13,16 @@ import { WelcomePanel } from './WelcomePanel/WelcomePanel';
 
 interface Props {
   initialClinics: Clinic[];
+  orderedSpecs: string[];
 }
 
-export function ClinicsLayout({ initialClinics }: Props) {
+export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
   const { t } = useLang();
   const { clinics, search, setSearch } = useClinics(initialClinics);
-  const allSpecs = Array.from(new Set(clinics.flatMap(c => c.specializations))).sort();
+  const clinicSpecSet = new Set(clinics.flatMap(c => c.specializations));
+  const allSpecs = orderedSpecs.length > 0
+    ? orderedSpecs.filter(s => clinicSpecSet.has(s))
+    : Array.from(clinicSpecSet).sort();
 
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
   const [showFilters, setShowFilters] = useState(false);
