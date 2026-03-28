@@ -68,19 +68,30 @@ function docToClinic(id: string, data: Record<string, unknown>): Clinic {
   };
 }
 
-// ПОЛУЧЕНИЕ ДАННЫЗХ С ФАЙЕРБЕЙЗ СЕЙЧАС ТОЛЬКО МОК  !!!!!
+// ПОЛУЧЕНИЕ ДАННЫЗХ С ФАЙЕРБЕЙЗ  
 export async function getClinics(): Promise<Clinic[]> {
   try {
-    const q = query(collection(db, 'clinics'), orderBy('rank', 'desc'));
+    const q = query(collection(db, 'clinics'), orderBy('rank', 'asc'));
     const snapshot = await getDocs(q);
     return snapshot.docs.map(d => docToClinic(d.id, d.data() as Record<string, unknown>));
   } catch (e) {
     console.warn('Firestore unavailable, using mock data:', e);
-    return MOCK_CLINICS.slice().sort((a, b) => b.rank - a.rank);
+    return MOCK_CLINICS.slice().sort((a, b) => a.rank - b.rank);
   }
 }
 
 
+
+export async function getSpecializations(): Promise<string[]> {
+  try {
+    const q = query(collection(db, 'specializations'), orderBy('rank', 'asc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(d => d.id);
+  } catch (e) {
+    console.warn('Could not fetch specializations:', e);
+    return [];
+  }
+}
 
 // TOJE SAMOE
 export async function getClinic(id: string): Promise<Clinic | null> {
