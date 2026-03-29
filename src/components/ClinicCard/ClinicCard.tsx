@@ -15,7 +15,11 @@ interface Props {
 export function ClinicCard({ clinic, isActive, activeSpecs, onClick }: Props) {
   const { t } = useLang();
   const MAX_SPECS = 3;
-  const visibleSpecs = clinic.specializations.slice(0, MAX_SPECS);
+  const sorted = [
+    ...clinic.specializations.filter((s) => activeSpecs.includes(s)),
+    ...clinic.specializations.filter((s) => !activeSpecs.includes(s)),
+  ];
+  const visibleSpecs = sorted.slice(0, MAX_SPECS);
   const hiddenCount = Math.max(0, clinic.specializations.length - MAX_SPECS);
 
   return (

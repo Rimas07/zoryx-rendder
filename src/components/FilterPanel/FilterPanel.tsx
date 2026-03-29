@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { ChevronLeft, Search } from 'lucide-react';
 import { useLang } from '../../contexts/LangContext';
-import { ALL_SPECIALIZATIONS } from '../../constants';
 import './FilterPanel.css';
 
 interface Props {
+  specs: string[];
   selected: string[];
   onToggle: (s: string) => void;
   onApply: () => void;
@@ -14,22 +14,29 @@ interface Props {
   onClose: () => void;
 }
 
-export function FilterPanel({ selected, onToggle, onApply, onReset, onClose }: Props) {
+export function FilterPanel({
+  specs,
+  selected,
+  onToggle,
+  onApply,
+  onReset,
+  onClose,
+}: Props) {
   const { t } = useLang();
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
 
-  const filtered = ALL_SPECIALIZATIONS.filter(s =>
+  const filtered = specs.filter((s) =>
     s.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="filter-backdrop" onClick={onClose}>
-      <div className="filter-modal" onClick={e => e.stopPropagation()}>
+      <div className="filter-modal" onClick={(e) => e.stopPropagation()}>
         <div className="filter-header">
           <button className="filter-back" onClick={onClose}>
             <ChevronLeft size={20} />
           </button>
-          <h3>{t('filters')}</h3>
+          <h3>{t("filters")}</h3>
         </div>
 
         <div className="filter-search">
@@ -37,18 +44,20 @@ export function FilterPanel({ selected, onToggle, onApply, onReset, onClose }: P
             type="text"
             placeholder="поиск специализации..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
           />
           <Search size={15} className="filter-search-icon" />
         </div>
 
         <div className="filter-body">
-          <div className="filter-section-title">{t('specializations')}</div>
+          <div className="filter-section-title">{t("specializations")}</div>
           <div className="filter-pills">
-            {filtered.map(s => (
+            {filtered.map((s) => (
               <button
                 key={s}
-                className={`filter-pill${selected.includes(s) ? ' active' : ''}`}
+                className={`filter-pill${
+                  selected.includes(s) ? " active" : ""
+                }`}
                 onClick={() => onToggle(s)}
               >
                 {s}
@@ -58,8 +67,12 @@ export function FilterPanel({ selected, onToggle, onApply, onReset, onClose }: P
         </div>
 
         <div className="filter-footer">
-          <button className="btn-apply" onClick={onApply}>{t('applyFilters')}</button>
-          <button className="btn-reset" onClick={onReset}>{t('resetFilters')}</button>
+          <button className="btn-apply" onClick={onApply}>
+            {t("applyFilters")}
+          </button>
+          <button className="btn-reset" onClick={onReset}>
+            {t("resetFilters")}
+          </button>
         </div>
       </div>
     </div>

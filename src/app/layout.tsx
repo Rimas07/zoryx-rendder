@@ -5,6 +5,9 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Zoryx — Медицинские клиники в Праге',
   description: 'Zoryx — медицинский гид по Праге',
+  icons: {
+    icon: '/ZORYX LOGO .png',
+  },
   openGraph: {
     title: 'Zoryx — Медицинские клиники в Праге',
     description: 'Zoryx — медицинский гид по Праге',
