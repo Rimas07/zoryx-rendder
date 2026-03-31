@@ -5,9 +5,7 @@ import { ClinicsLayout } from '../components/ClinicsLayout';
 export const dynamic = "force-static";
 
 export default async function HomePage() {
-  const [clinics, orderedSpecs] = await Promise.all([
-    getClinics().catch(() => []),
-    getSpecializations().catch(() => []),
-  ]);
+  const clinics = await getClinics().catch(() => []);
+  const orderedSpecs = await getSpecializations(clinics).catch(() => []);
   return <ClinicsLayout initialClinics={clinics} orderedSpecs={orderedSpecs} />;
 }

@@ -64,6 +64,7 @@ function docToClinic(id: string, data: Record<string, unknown>): Clinic {
     insurances: data.insurances as string | undefined,
     updatedAt,
     altegioCompanyId: data.altegioCompanyId as string | undefined,
+    isPartner: (data.isPartner as boolean) || false,
     info: data.info as Record<string, string> | undefined,
   };
 }
@@ -82,13 +83,17 @@ export async function getClinics(): Promise<Clinic[]> {
 
 
 
-export async function getSpecializations(): Promise<string[]> {
+export async function getSpecializations(clinics?: Clinic[]): Promise<string[]> {
   try {
     const q = query(collection(db, 'specializations'), orderBy('rank', 'asc'));
     const snapshot = await getDocs(q);
     return snapshot.docs.map(d => d.id);
   } catch (e) {
     console.warn('Could not fetch specializations:', e);
+    if (clinics && clinics.length > 0) {
+      const all = clinics.flatMap(c => c.specializations ?? []);
+      return [...new Set(all)].sort();
+    }
     return [];
   }
 }

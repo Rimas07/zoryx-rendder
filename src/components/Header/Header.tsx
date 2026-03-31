@@ -1,9 +1,13 @@
 'use client';
 
-import { useState } from 'react';
 import { useLang } from '../../contexts/LangContext';
 import type { Lang } from '../../i18n';
-import './Header.css';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const LANG_LABELS: Record<Lang, string> = { cs: 'CS', ru: 'RU', uk: 'UK', en: 'EN' };
 
@@ -13,53 +17,51 @@ interface Props {
 
 export function Header({ onLogoClick }: Props) {
   const { lang, setLang } = useLang();
-  const [open, setOpen] = useState(false);
-  const [mapOn, setMapOn] = useState(false);
 
   return (
-    <header className="header">
-    
-      <div className="logo" onClick={onLogoClick}>
-        <img src="/ZORYX LOGO .png" alt="Zoryx Logo" className="logo-icon" />
-        <div className="logo-text">Zoryx</div>
+    <header className="bg-gradient-to-r from-[#622ADA] to-[#0070BB] h-[60px] px-5 flex items-center justify-between gap-4 z-[200] shrink-0 max-sm:px-3 max-sm:gap-2">
+
+      {/* Logo */}
+      <div className="flex items-center gap-2 shrink-0 cursor-pointer" onClick={onLogoClick}>
+        <img src="/ZORYX LOGO .png" alt="Zoryx Logo" className="h-[42px] w-auto max-sm:h-8" />
+        <span className="text-[22px] font-bold text-white tracking-[-0.3px] max-sm:text-[18px]">Zoryx</span>
       </div>
 
-      <div className="header-center">
-        <a className="store-btn" href="#" onClick={(e) => e.preventDefault()}>
+      {/* Store badges */}
+      <div className="flex items-center gap-2.5 max-sm:gap-1.5">
+        <a href="#" onClick={(e) => e.preventDefault()} className="flex items-center rounded-lg hover:opacity-85 transition-opacity">
           <img
-            className="store-img"
             src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
             alt="Google Play"
+            className="h-9 w-auto block max-sm:h-[26px]"
           />
         </a>
-        <a className="store-btn" href="#" onClick={(e) => e.preventDefault()}>
-          <img className='store-img'
+        <a href="#" onClick={(e) => e.preventDefault()} className="flex items-center rounded-lg hover:opacity-85 transition-opacity">
+          <img
             src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
             alt="App Store"
+            className="h-9 w-auto block max-sm:h-[26px]"
           />
         </a>
       </div>
 
-      <div className="lang-switcher" onClick={() => setOpen((o) => !o)}>
-        <span className="lang-current">{LANG_LABELS[lang]} ▾</span>
-        {open && (
-          <div className="lang-dropdown">
-            {(Object.keys(LANG_LABELS) as Lang[]).map((l) => (
-              <div
-                key={l}
-                className={`lang-option${l === lang ? " active" : ""}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setLang(l);
-                  setOpen(false);
-                }}
-              >
-                {LANG_LABELS[l]}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Language switcher */}
+      <DropdownMenu>
+        <DropdownMenuTrigger className="text-white/90 text-[14px] font-semibold cursor-pointer shrink-0 select-none outline-none">
+          <span className="px-[10px] py-1 border border-white/40 rounded-md">{LANG_LABELS[lang]} ▾</span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="z-[300] min-w-[80px]">
+          {(Object.keys(LANG_LABELS) as Lang[]).map((l) => (
+            <DropdownMenuItem
+              key={l}
+              className={l === lang ? 'font-semibold text-[#622ADA]' : ''}
+              onClick={() => setLang(l)}
+            >
+              {LANG_LABELS[l]}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </header>
   );
 }
