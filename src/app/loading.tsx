@@ -9,7 +9,7 @@ export default function Loading() {
         className="w-48 h-48 object-cover rounded-full"
       >
         <source
-          src="/PixVerse_V6_Image_Text_360P_Minimal_logo_anima.mp4"
+          src="/loading.mp4"
           type="video/mp4"
         />
       </video>
