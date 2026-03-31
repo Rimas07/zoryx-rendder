@@ -9,7 +9,7 @@ export default function Loading() {
         className="w-48 h-48 object-cover rounded-full"
       >
         <source
-          src="/loading.mp4"
+          src="https://raw.githubusercontent.com/Rimas07/zoryx-rendder/main/public/loading.mp4"
           type="video/mp4"
         />
       </video>
