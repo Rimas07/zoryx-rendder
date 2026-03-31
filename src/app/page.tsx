@@ -1,8 +1,7 @@
 import { getClinics, getSpecializations } from '../lib/firebase';
 import { ClinicsLayout } from '../components/ClinicsLayout';
 
-
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const [clinics, orderedSpecs] = await Promise.all([
