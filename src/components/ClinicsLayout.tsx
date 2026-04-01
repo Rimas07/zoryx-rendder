@@ -194,7 +194,7 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
                 activeSpecs={activeSpecs}
                 isFavorite={favorites.has(clinic.id)}
                 onToggleFavorite={() => toggleFavorite(clinic.id)}
-                onClick={() => { setSelectedClinic(clinic); router.push(`/k/${clinic.id}`, { scroll: false }); }}
+                onClick={() => { setSelectedClinic(clinic); window.history.pushState(null, '', `/k/${clinic.id}`); }}
               />
             ))}
           </div>
