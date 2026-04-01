@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 const MapView = dynamic(() => import('./MapView/MapView').then(m => m.MapView), { ssr: false });
-import { Search, SlidersHorizontal, X, ChevronLeft, Heart } from 'lucide-react';
+import { Search, SlidersHorizontal, X, ChevronLeft, Heart, Map } from 'lucide-react';
 import { useClinics } from '../hooks/useClinics';
 import type { Clinic } from '../types/clinic';
 import { useLang } from '../contexts/LangContext';
@@ -15,6 +15,7 @@ import { ClinicDetail } from './ClinicDetail/ClinicDetail';
 import { WelcomePanel } from './WelcomePanel/WelcomePanel';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+
 
 interface Props {
   initialClinics: Clinic[];
@@ -68,7 +69,10 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
   return (
     <div className="app">
       <Header
-        onLogoClick={() => { setSelectedClinic(null); router.push('/'); }}
+        onLogoClick={() => {
+          setSelectedClinic(null);
+          router.push("/");
+        }}
         mapVisible={mapVisible}
         onMapToggle={() => setMapVisible((v) => !v)}
       />
@@ -83,6 +87,14 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
         />
       )}
       <div className={`main-layout${selectedClinic ? " show-detail" : ""}`}>
+        {/* Floating map button — mobile only */}
+        <button
+          onClick={() => setMapVisible((v) => !v)}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 px-5 py-3 rounded-full shadow-lg text-white text-[14px] font-semibold sm:hidden bg-gradient-to-r from-[#622ADA] to-[#0070BB]"
+        >
+          <Map size={18} />
+          {mapVisible ? "Скрыть карту" : "Показать на карте"}
+        </button>
         {/* ── Left panel ── */}
         <div className="panel-left">
           <div className="search-area">
@@ -194,7 +206,10 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
                 activeSpecs={activeSpecs}
                 isFavorite={favorites.has(clinic.id)}
                 onToggleFavorite={() => toggleFavorite(clinic.id)}
-                onClick={() => { setSelectedClinic(clinic); window.history.pushState(null, '', `/k/${clinic.id}`); }}
+                onClick={() => {
+                  setSelectedClinic(clinic);
+                  window.history.pushState(null, "", `/k/${clinic.id}`);
+                }}
               />
             ))}
           </div>

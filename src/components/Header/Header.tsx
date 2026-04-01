@@ -28,7 +28,7 @@ export function Header({ onLogoClick, mapVisible, onMapToggle }: Props) {
         onClick={onLogoClick}
       >
         <img
-          src="/ZORYX LOGO .png"
+          src="https://gsprqyfmodotiezvopiq.supabase.co/storage/v1/object/public/fdsfds/ZORYX%20LOGO%20.png"
           alt="Zoryx Logo"
           className="h-[42px] w-auto max-sm:h-8"
         />

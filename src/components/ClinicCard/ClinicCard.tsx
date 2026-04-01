@@ -52,7 +52,7 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
           </div>
           {clinic.isPartner && (
             <img
-              src="/Web Zoryx partner.png"
+              src="https://gsprqyfmodotiezvopiq.supabase.co/storage/v1/object/public/fdsfds/Web%20Zoryx%20partner.png"
               alt="Zoryx Partner"
               className="h-[26px] w-auto mb-1"
             />
