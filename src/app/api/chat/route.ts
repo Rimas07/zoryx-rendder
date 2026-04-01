@@ -1,8 +1,8 @@
 export async function POST(req: Request) {
     const { message, specializations, clinics } = await req.json();
 
-    const clinicList = (clinics as { id: string; name: string; specializations: string[] }[])
-        .map(c => `- ${c.name} (${c.specializations.join(', ')})`)
+    const clinicList = (clinics as { id: string; name: string; specializations: string[]; languages: string[]; address: string }[])
+        .map(c => `- ${c.name} | специализации: ${c.specializations.join(', ')} | языки: ${c.languages.join(', ')} | адрес: ${c.address}`)
         .join('\n');
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -21,11 +21,12 @@ export async function POST(req: Request) {
 Клиники в каталоге:
 ${clinicList}
 
-Пользователь описывает симптомы — ты определяешь нужную специализацию, даёшь краткий совет и рекомендуешь конкретную клинику из списка выше.
+Пользователь может описывать симптомы, просить врача говорящего на определённом языке (русский=ru, украинский=uk, чешский=cs, английский=en), или упоминать район Праги (Praha 1, Praha 7 и т.д.).
+Подбери подходящую клинику из списка с учётом всех критериев пользователя.
 Отвечай на том языке на котором пишет пользователь.
 Всегда заканчивай ответ в формате:
-**Рекомендуемая специализация: [название]**
-**Рекомендуемая клиника: [название клиники из списка]**`
+**Рекомендуемая специализация: [название или "любая" если не указана]**
+**Рекомендуемая клиника: [точное название клиники из списка]**`
                 },
                 { role: 'user', content: message }
             ],
