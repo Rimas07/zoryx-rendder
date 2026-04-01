@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
+const MapView = dynamic(() => import('./MapView/MapView').then(m => m.MapView), { ssr: false });
 import { Search, SlidersHorizontal, X, ChevronLeft, Heart } from 'lucide-react';
 import { useClinics } from '../hooks/useClinics';
 import type { Clinic } from '../types/clinic';
@@ -32,6 +34,8 @@ export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
   const [activeSpecs, setActiveSpecs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [mapVisible, setMapVisible] = useState(false);
+
 
   const toggleFavorite = (id: string) =>
     setFavorites(prev => {
@@ -60,7 +64,11 @@ export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
 
   return (
     <div className="app">
-      <Header onLogoClick={() => setSelectedClinic(null)} />
+      <Header
+        onLogoClick={() => setSelectedClinic(null)}
+        mapVisible={mapVisible}
+        onMapToggle={() => setMapVisible((v) => !v)}
+      />
       {showFilters && (
         <FilterPanel
           specs={allSpecs}
@@ -88,7 +96,9 @@ export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
               <Button
                 variant="outline"
                 size="icon"
-                className={`filter-btn${activeSpecs.length > 0 ? " active" : ""}`}
+                className={`filter-btn${
+                  activeSpecs.length > 0 ? " active" : ""
+                }`}
                 onClick={() => {
                   setPendingSpecs(activeSpecs);
                   setShowFilters(true);
@@ -104,25 +114,32 @@ export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
             <button
               onClick={() => setShowFavoritesOnly(false)}
               className={[
-                'px-4 py-[7px] rounded-full text-[13px] font-medium transition-colors border-[1.5px]',
+                "px-4 py-[7px] rounded-full text-[13px] font-medium transition-colors border-[1.5px]",
                 !showFavoritesOnly
-                  ? 'bg-[#5b4fcf] border-[#5b4fcf] text-white'
-                  : 'bg-white border-[#e2dff5] text-[#6b6690] hover:border-[#5b4fcf] hover:text-[#5b4fcf]',
-              ].join(' ')}
+                  ? "bg-[#5b4fcf] border-[#5b4fcf] text-white"
+                  : "bg-white border-[#e2dff5] text-[#6b6690] hover:border-[#5b4fcf] hover:text-[#5b4fcf]",
+              ].join(" ")}
             >
-              {t('allClinics')}
+              {t("allClinics")}
             </button>
             <button
               onClick={() => setShowFavoritesOnly(true)}
               className={[
-                'px-4 py-[7px] rounded-full text-[13px] font-medium transition-colors border-[1.5px] flex items-center gap-1.5',
+                "px-4 py-[7px] rounded-full text-[13px] font-medium transition-colors border-[1.5px] flex items-center gap-1.5",
                 showFavoritesOnly
-                  ? 'bg-[#5b4fcf] border-[#5b4fcf] text-white'
-                  : 'bg-white border-[#e2dff5] text-[#6b6690] hover:border-[#5b4fcf] hover:text-[#5b4fcf]',
-              ].join(' ')}
+                  ? "bg-[#5b4fcf] border-[#5b4fcf] text-white"
+                  : "bg-white border-[#e2dff5] text-[#6b6690] hover:border-[#5b4fcf] hover:text-[#5b4fcf]",
+              ].join(" ")}
             >
-              <Heart size={14} className={showFavoritesOnly ? 'fill-white text-white' : 'fill-[#5b4fcf] text-[#5b4fcf]'} />
-              {t('onlyFavorites')}
+              <Heart
+                size={14}
+                className={
+                  showFavoritesOnly
+                    ? "fill-white text-white"
+                    : "fill-[#5b4fcf] text-[#5b4fcf]"
+                }
+              />
+              {t("onlyFavorites")}
             </button>
           </div>
 
@@ -182,7 +199,9 @@ export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
 
         {/* ── Right panel ── */}
         <div className="panel-right">
-          {selectedClinic ? (
+          {selectedClinic && mapVisible ? (
+            <MapView clinic={selectedClinic} />
+          ) : selectedClinic ? (
             <ClinicDetail
               key={selectedClinic.id}
               clinic={selectedClinic}

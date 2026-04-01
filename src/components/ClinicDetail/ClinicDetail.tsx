@@ -207,18 +207,6 @@ export function ClinicDetail({ clinic, onBack }: Props) {
           </InfoRow>
         )}
 
-        {clinic.address && (
-          <div className="rounded-xl overflow-hidden mt-2">
-            <iframe
-              title="map"
-              className="w-full h-[200px] border-none block"
-              loading="lazy"
-              src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                clinic.address
-              )}&output=embed`}
-            />
-          </div>
-        )}
       </div>
 
       {clinic.altegioCompanyId && (
