@@ -54,8 +54,9 @@ export function Header({ onLogoClick, mapVisible, onMapToggle }: Props) {
       {/* Right — Store badges + Language */}
       <div className="flex items-center gap-3 max-sm:gap-1.5">
         <a
-          href="#"
-          onClick={(e) => e.preventDefault()}
+          href="https://play.google.com/store/apps/details?id=org.zoryx"
+          target="_blank"
+          rel="noreferrer"
           className="flex items-center rounded-lg hover:opacity-85 transition-opacity"
         >
           <img
@@ -65,8 +66,9 @@ export function Header({ onLogoClick, mapVisible, onMapToggle }: Props) {
           />
         </a>
         <a
-          href="#"
-          onClick={(e) => e.preventDefault()}
+          href="https://apps.apple.com/ru/app/zoryx/id1478295123"
+          target="_blank"
+          rel="noreferrer"
           className="flex items-center rounded-lg hover:opacity-85 transition-opacity"
         >
           <img
