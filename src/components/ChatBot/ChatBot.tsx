@@ -5,7 +5,7 @@ import { MessageCircle, X, Send } from "lucide-react";
 
 interface Props {
   specializations: string[];
-  clinics: { id: string; name: string; specializations: string[] }[];
+  clinics: { id: string; name: string; specializations: string[]; languages: string[]; address: string }[];
   onSpecializationSelect?: (spec: string) => void;
   onClinicSelect?: (id: string) => void;
 }

@@ -233,7 +233,7 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
       </div>
       <ChatBot
         specializations={allSpecs}
-        clinics={clinics.map(c => ({ id: c.id, name: c.name, specializations: c.specializations }))}
+        clinics={clinics.map(c => ({ id: c.id, name: c.name, specializations: c.specializations, languages: c.languages, address: c.address }))}
         onSpecializationSelect={(spec) => {
           setActiveSpecs([spec]);
         }}
