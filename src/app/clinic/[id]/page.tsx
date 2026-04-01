@@ -3,11 +3,12 @@ import { notFound } from 'next/navigation';
 import { ClinicDetailWrapper } from '../../../components/ClinicDetailWrapper';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function ClinicPage({ params }: Props) {
-  const clinic = await getClinic(params.id).catch(() => null);
+  const { id } = await params;
+  const clinic = await getClinic(id).catch(() => null);
   if (!clinic) notFound();
   return <ClinicDetailWrapper clinic={clinic} />;
 }

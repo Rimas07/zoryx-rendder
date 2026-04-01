@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 const MapView = dynamic(() => import('./MapView/MapView').then(m => m.MapView), { ssr: false });
 import { Search, SlidersHorizontal, X, ChevronLeft, Heart } from 'lucide-react';
@@ -18,17 +19,19 @@ import { Badge } from "@/components/ui/badge";
 interface Props {
   initialClinics: Clinic[];
   orderedSpecs: string[];
+  initialSelectedClinic?: Clinic | null;
 }
 
-export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
+export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedClinic = null }: Props) {
   const { t } = useLang();
+  const router = useRouter();
   const { clinics, search, setSearch } = useClinics(initialClinics);
   const clinicSpecSet = new Set(clinics.flatMap(c => c.specializations));
   const allSpecs = orderedSpecs.length > 0
     ? orderedSpecs.filter(s => clinicSpecSet.has(s))
     : Array.from(clinicSpecSet).sort();
 
-  const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
+  const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(initialSelectedClinic);
   const [showFilters, setShowFilters] = useState(false);
   const [pendingSpecs, setPendingSpecs] = useState<string[]>([]);
   const [activeSpecs, setActiveSpecs] = useState<string[]>([]);
@@ -65,7 +68,7 @@ export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
   return (
     <div className="app">
       <Header
-        onLogoClick={() => setSelectedClinic(null)}
+        onLogoClick={() => { setSelectedClinic(null); router.push('/'); }}
         mapVisible={mapVisible}
         onMapToggle={() => setMapVisible((v) => !v)}
       />
@@ -191,7 +194,7 @@ export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
                 activeSpecs={activeSpecs}
                 isFavorite={favorites.has(clinic.id)}
                 onToggleFavorite={() => toggleFavorite(clinic.id)}
-                onClick={() => setSelectedClinic(clinic)}
+                onClick={() => { setSelectedClinic(clinic); router.push(`/k/${clinic.id}`, { scroll: false }); }}
               />
             ))}
           </div>
