@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Zoryx — Медицинские клиники в Праге",
   description: "Zoryx — медицинский гид по Праге",
   icons: {
-    icon: "/ZORYX LOGO .png",
+    icon: "https://gsprqyfmodotiezvopiq.supabase.co/storage/v1/object/public/fdsfds/ZORYX%20LOGO%20.png",
   },
   openGraph: {
     title: "Zoryx — Медицинские клиники в Праге",

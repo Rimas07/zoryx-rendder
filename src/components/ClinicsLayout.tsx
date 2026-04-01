@@ -15,6 +15,7 @@ import { ClinicDetail } from './ClinicDetail/ClinicDetail';
 import { WelcomePanel } from './WelcomePanel/WelcomePanel';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ChatBot } from "./ChatBot/ChatBot";
 
 
 interface Props {
@@ -230,6 +231,20 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
           )}
         </div>
       </div>
+      <ChatBot
+        specializations={allSpecs}
+        clinics={clinics.map(c => ({ id: c.id, name: c.name, specializations: c.specializations }))}
+        onSpecializationSelect={(spec) => {
+          setActiveSpecs([spec]);
+        }}
+        onClinicSelect={(id) => {
+          const clinic = clinics.find(c => c.id === id);
+          if (clinic) {
+            setSelectedClinic(clinic);
+            window.history.pushState(null, "", `/k/${clinic.id}`);
+          }
+        }}
+      />
     </div>
   );
 }
