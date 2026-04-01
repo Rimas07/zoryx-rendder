@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import "leaflet/dist/leaflet.css";
 import type { Clinic } from "../../types/clinic";
 
 interface Props {
@@ -17,11 +18,8 @@ export function MapView({ clinic }: Props) {
     const controller = new AbortController();
 
     import("leaflet").then(async (L) => {
-      await import("leaflet/dist/leaflet.css" as never);
-
       if (controller.signal.aborted || !containerRef.current) return;
 
-      // убираем старую карту если есть
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -71,7 +69,7 @@ export function MapView({ clinic }: Props) {
   return (
     <div className="w-full h-full flex flex-col">
       <div className="px-4 py-2 text-sm text-gray-500">{clinic.address}</div>
-      <div ref={containerRef} className="flex-1" />
+      <div ref={containerRef} style={{ flex: 1, minHeight: "400px" }} />
     </div>
   );
 }
