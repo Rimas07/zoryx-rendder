@@ -1,20 +1,34 @@
-import { getClinic, getClinics } from '../../../lib/firebase';
+import { getClinic, getClinics, getSpecializations } from '../../../lib/firebase';
+import { ClinicsLayout } from '../../../components/ClinicsLayout';
 import { notFound } from 'next/navigation';
-import { ClinicDetailWrapper } from '../../../components/ClinicDetailWrapper';
-
-export const dynamic = 'force-static';
-
-export async function generateStaticParams() {
-  const clinics = await getClinics();
-  return clinics.map(c => ({ id: c.id }));
-}
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
+}
+
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  const clinics = await getClinics().catch(() => []);
+  return clinics.map((clinic) => ({ id: clinic.id }));
 }
 
 export default async function ClinicPage({ params }: Props) {
-  const clinic = await getClinic(params.id).catch(() => null);
-  if (!clinic) notFound();
-  return <ClinicDetailWrapper clinic={clinic} />;
+  const { id } = await params;
+  const [selectedClinic, clinics] = await Promise.all([
+    getClinic(id).catch(() => null),
+    getClinics().catch(() => []),
+  ]);
+
+  if (!selectedClinic) notFound();
+
+  const orderedSpecs = await getSpecializations(clinics).catch(() => [] as string[]);
+
+  return (
+    <ClinicsLayout
+      initialClinics={clinics}
+      orderedSpecs={orderedSpecs}
+      initialSelectedClinic={selectedClinic}
+    />
+  );
 }

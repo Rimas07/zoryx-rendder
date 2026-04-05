@@ -27,6 +27,8 @@ export const translations = {
     noResultsHint: 'Try changing your search or filter settings.',
     ratings: 'ratings',
     zoryxPartner: '🧩 Zoryx partner',
+    allClinics: 'All clinics',
+    onlyFavorites: 'Favorites only',
   },
   cs: {
     searchPlaceholder: 'Hledat kliniku...',
@@ -54,6 +56,8 @@ export const translations = {
     noResultsHint: 'Zkuste změnit vyhledávání nebo nastavení filtrů.',
     ratings: 'hodnocení',
     zoryxPartner: '🧩 Zoryx partner',
+    allClinics: 'Všechny kliniky',
+    onlyFavorites: 'Jen oblíbené',
   },
   ru: {
     searchPlaceholder: 'Поиск клиники...',
@@ -81,6 +85,8 @@ export const translations = {
     noResultsHint: 'Попробуйте изменить запрос или настройки фильтров.',
     ratings: 'оценок',
     zoryxPartner: '🧩 Zoryx partner',
+    allClinics: 'Все клиники',
+    onlyFavorites: 'Только избранные',
   },
   uk: {
     searchPlaceholder: 'Шукати клініку...',
@@ -108,6 +114,8 @@ export const translations = {
     noResultsHint: 'Спробуйте змінити запит або налаштування фільтрів.',
     ratings: 'оцінок',
     zoryxPartner: '🧩 Zoryx partner',
+    allClinics: 'Всі клініки',
+    onlyFavorites: 'Лише обрані',
   },
 } satisfies Record<Lang, Record<string, string>>;
 

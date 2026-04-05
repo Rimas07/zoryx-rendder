@@ -1,13 +1,11 @@
 import { getClinics, getSpecializations } from '../lib/firebase';
 import { ClinicsLayout } from '../components/ClinicsLayout';
 
-
-export const dynamic = "force-static";
+export const revalidate = 300;
 
 export default async function HomePage() {
-  const [clinics, orderedSpecs] = await Promise.all([
-    getClinics().catch(() => []),
-    getSpecializations().catch(() => []),
-  ]);
+  const clinics = await getClinics().catch(() => []);
+  const orderedSpecs = await getSpecializations(clinics).catch(() => [] as string[]);
+
   return <ClinicsLayout initialClinics={clinics} orderedSpecs={orderedSpecs} />;
 }

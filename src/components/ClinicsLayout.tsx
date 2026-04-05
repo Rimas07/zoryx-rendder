@@ -1,7 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, SlidersHorizontal, X, ChevronLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
+const MapView = dynamic(() => import('./MapView/MapView').then(m => m.MapView), { ssr: false });
+import { Search, SlidersHorizontal, X, ChevronLeft, Heart, Map } from 'lucide-react';
 import { useClinics } from '../hooks/useClinics';
 import type { Clinic } from '../types/clinic';
 import { useLang } from '../contexts/LangContext';
@@ -10,24 +13,41 @@ import { FilterPanel } from './FilterPanel/FilterPanel';
 import { ClinicCard } from './ClinicCard/ClinicCard';
 import { ClinicDetail } from './ClinicDetail/ClinicDetail';
 import { WelcomePanel } from './WelcomePanel/WelcomePanel';
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ChatBot } from "./ChatBot/ChatBot";
+
 
 interface Props {
   initialClinics: Clinic[];
   orderedSpecs: string[];
+  initialSelectedClinic?: Clinic | null;
 }
 
-export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
+export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedClinic = null }: Props) {
   const { t } = useLang();
+  const router = useRouter();
   const { clinics, search, setSearch } = useClinics(initialClinics);
   const clinicSpecSet = new Set(clinics.flatMap(c => c.specializations));
   const allSpecs = orderedSpecs.length > 0
     ? orderedSpecs.filter(s => clinicSpecSet.has(s))
     : Array.from(clinicSpecSet).sort();
 
-  const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
+  const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(initialSelectedClinic);
   const [showFilters, setShowFilters] = useState(false);
   const [pendingSpecs, setPendingSpecs] = useState<string[]>([]);
   const [activeSpecs, setActiveSpecs] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [mapVisible, setMapVisible] = useState(false);
+
+
+  const toggleFavorite = (id: string) =>
+    setFavorites(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
 
   const handleToggleSpec = (s: string) =>
     setPendingSpecs(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
@@ -35,7 +55,7 @@ export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
   const handleApply = () => { setActiveSpecs(pendingSpecs); setShowFilters(false); };
   const handleReset = () => { setPendingSpecs([]); setActiveSpecs([]); };
 
-  const displayed = activeSpecs.length === 0
+  const filtered = activeSpecs.length === 0
     ? clinics
     : clinics.filter(c =>
         activeSpecs.some(s =>
@@ -43,12 +63,28 @@ export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
         )
       );
 
+  const displayed = showFavoritesOnly
+    ? filtered.filter(c => favorites.has(c.id))
+    : filtered;
+
+  const openClinic = (clinic: Clinic) => {
+    setSelectedClinic(clinic);
+    router.push(`/clinic/${clinic.id}`, { scroll: false });
+  };
+
   return (
     <div className="app">
-      <Header onLogoClick={() => setSelectedClinic(null)} />
+      <Header
+        onLogoClick={() => {
+          setSelectedClinic(null);
+          router.push("/");
+        }}
+        mapVisible={mapVisible}
+        onMapToggle={() => setMapVisible((v) => !v)}
+      />
       {showFilters && (
         <FilterPanel
-          specs = {allSpecs}
+          specs={allSpecs}
           selected={pendingSpecs}
           onToggle={handleToggleSpec}
           onApply={handleApply}
@@ -56,8 +92,15 @@ export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
           onClose={() => setShowFilters(false)}
         />
       )}
-      <div className={`main-layout${selectedClinic ? ' show-detail' : ''}`}>
-
+      <div className={`main-layout${selectedClinic ? " show-detail" : ""}`}>
+        {/* Floating map button — mobile only */}
+        <button
+          onClick={() => setMapVisible((v) => !v)}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 px-5 py-3 rounded-full shadow-lg text-white text-[14px] font-semibold sm:hidden bg-gradient-to-r from-[#622ADA] to-[#0070BB]"
+        >
+          <Map size={18} />
+          {mapVisible ? "Скрыть карту" : "Показать на карте"}
+        </button>
         {/* ── Left panel ── */}
         <div className="panel-left">
           <div className="search-area">
@@ -65,39 +108,91 @@ export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
               <div className="search-bar">
                 <input
                   type="text"
-                  placeholder={t('searchPlaceholder')}
+                  placeholder={t("searchPlaceholder")}
                   value={search}
-                  onChange={e => setSearch(e.target.value)}
+                  onChange={(e) => setSearch(e.target.value)}
                 />
                 <Search size={16} className="search-icon" />
               </div>
-              <button
-                className={`filter-btn${activeSpecs.length > 0 ? ' active' : ''}`}
-                onClick={() => { setPendingSpecs(activeSpecs); setShowFilters(true); }}
+              <Button
+                variant="outline"
+                size="icon"
+                className={`filter-btn${
+                  activeSpecs.length > 0 ? " active" : ""
+                }`}
+                onClick={() => {
+                  setPendingSpecs(activeSpecs);
+                  setShowFilters(true);
+                }}
               >
                 <SlidersHorizontal size={18} />
-              </button>
+              </Button>
             </div>
+          </div>
+
+          {/* All / Favorites toggle */}
+          <div className="flex gap-2 px-[14px] pb-2">
+            <button
+              onClick={() => setShowFavoritesOnly(false)}
+              className={[
+                "px-4 py-[7px] rounded-full text-[13px] font-medium transition-colors border-[1.5px]",
+                !showFavoritesOnly
+                  ? "bg-[#5b4fcf] border-[#5b4fcf] text-white"
+                  : "bg-white border-[#e2dff5] text-[#6b6690] hover:border-[#5b4fcf] hover:text-[#5b4fcf]",
+              ].join(" ")}
+            >
+              {t("allClinics")}
+            </button>
+            <button
+              onClick={() => setShowFavoritesOnly(true)}
+              className={[
+                "px-4 py-[7px] rounded-full text-[13px] font-medium transition-colors border-[1.5px] flex items-center gap-1.5",
+                showFavoritesOnly
+                  ? "bg-[#5b4fcf] border-[#5b4fcf] text-white"
+                  : "bg-white border-[#e2dff5] text-[#6b6690] hover:border-[#5b4fcf] hover:text-[#5b4fcf]",
+              ].join(" ")}
+            >
+              <Heart
+                size={14}
+                className={
+                  showFavoritesOnly
+                    ? "fill-white text-white"
+                    : "fill-[#5b4fcf] text-[#5b4fcf]"
+                }
+              />
+              {t("onlyFavorites")}
+            </button>
           </div>
 
           {activeSpecs.length > 0 && (
             <div className="active-filters">
               <div className="active-filters-chips">
-                {activeSpecs.map(s => (
-                  <div key={s} className="active-filter-pill">
+                {activeSpecs.map((s) => (
+                  <Badge
+                    key={s}
+                    variant="secondary"
+                    className="gap-1 pr-1 cursor-default"
+                  >
                     {s}
                     <button
-                      className="remove-btn"
-                      onClick={() => setActiveSpecs(prev => prev.filter(x => x !== s))}
+                      className="ml-1 hover:text-[#5b4fcf] transition-colors"
+                      onClick={() =>
+                        setActiveSpecs((prev) => prev.filter((x) => x !== s))
+                      }
                     >
                       <X size={11} />
                     </button>
-                  </div>
+                  </Badge>
                 ))}
               </div>
-              <button className="filters-collapse-btn" onClick={() => setActiveSpecs([])}>
+              <Button
+                variant="outline"
+                size="icon"
+                className="filters-collapse-btn shrink-0"
+                onClick={() => setActiveSpecs([])}
+              >
                 <ChevronLeft size={18} />
-              </button>
+              </Button>
             </div>
           )}
 
@@ -105,17 +200,19 @@ export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
             {displayed.length === 0 && (
               <div className="state-center">
                 <div className="state-icon">🔍</div>
-                <h4>{t('noResults')}</h4>
-                <p>{t('noResultsHint')}</p>
+                <h4>{t("noResults")}</h4>
+                <p>{t("noResultsHint")}</p>
               </div>
             )}
-            {displayed.map(clinic => (
+            {displayed.map((clinic) => (
               <ClinicCard
                 key={clinic.id}
                 clinic={clinic}
                 isActive={selectedClinic?.id === clinic.id}
                 activeSpecs={activeSpecs}
-                onClick={() => setSelectedClinic(clinic)}
+                isFavorite={favorites.has(clinic.id)}
+                onToggleFavorite={() => toggleFavorite(clinic.id)}
+                onClick={() => openClinic(clinic)}
               />
             ))}
           </div>
@@ -123,12 +220,35 @@ export function ClinicsLayout({ initialClinics, orderedSpecs }: Props) {
 
         {/* ── Right panel ── */}
         <div className="panel-right">
-          {selectedClinic
-            ? <ClinicDetail key={selectedClinic.id} clinic={selectedClinic} onBack={() => setSelectedClinic(null)} />
-            : <WelcomePanel />
-          }
+          {selectedClinic && mapVisible ? (
+            <MapView clinic={selectedClinic} />
+          ) : selectedClinic ? (
+            <ClinicDetail
+              key={selectedClinic.id}
+              clinic={selectedClinic}
+              onBack={() => {
+                setSelectedClinic(null);
+                router.push('/', { scroll: false });
+              }}
+            />
+          ) : (
+            <WelcomePanel />
+          )}
         </div>
       </div>
+      <ChatBot
+        specializations={allSpecs}
+        clinics={clinics.map(c => ({ id: c.id, name: c.name, specializations: c.specializations, languages: c.languages, address: c.address }))}
+        onSpecializationSelect={(spec) => {
+          setActiveSpecs([spec]);
+        }}
+        onClinicSelect={(id) => {
+          const clinic = clinics.find(c => c.id === id);
+          if (clinic) {
+            openClinic(clinic);
+          }
+        }}
+      />
     </div>
   );
 }

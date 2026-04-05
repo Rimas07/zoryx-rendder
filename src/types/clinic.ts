@@ -21,6 +21,7 @@ export interface Clinic {
   insurances?: string;
   updatedAt: string;
   altegioCompanyId?: string;
+  isPartner?: boolean;
   info?: ClinicInfo;          
 }
 
