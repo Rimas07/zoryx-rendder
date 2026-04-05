@@ -1,6 +1,8 @@
 import { MetadataRoute } from 'next';
 import { getClinics } from '../lib/firebase';
 
+export const revalidate = 300;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const clinics = await getClinics();
 

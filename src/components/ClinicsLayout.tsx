@@ -67,6 +67,11 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
     ? filtered.filter(c => favorites.has(c.id))
     : filtered;
 
+  const openClinic = (clinic: Clinic) => {
+    setSelectedClinic(clinic);
+    router.push(`/clinic/${clinic.id}`, { scroll: false });
+  };
+
   return (
     <div className="app">
       <Header
@@ -207,10 +212,7 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
                 activeSpecs={activeSpecs}
                 isFavorite={favorites.has(clinic.id)}
                 onToggleFavorite={() => toggleFavorite(clinic.id)}
-                onClick={() => {
-                  setSelectedClinic(clinic);
-                  window.history.pushState(null, "", `/k/${clinic.id}`);
-                }}
+                onClick={() => openClinic(clinic)}
               />
             ))}
           </div>
@@ -224,7 +226,10 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
             <ClinicDetail
               key={selectedClinic.id}
               clinic={selectedClinic}
-              onBack={() => setSelectedClinic(null)}
+              onBack={() => {
+                setSelectedClinic(null);
+                router.push('/', { scroll: false });
+              }}
             />
           ) : (
             <WelcomePanel />
@@ -240,8 +245,7 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
         onClinicSelect={(id) => {
           const clinic = clinics.find(c => c.id === id);
           if (clinic) {
-            setSelectedClinic(clinic);
-            window.history.pushState(null, "", `/k/${clinic.id}`);
+            openClinic(clinic);
           }
         }}
       />
