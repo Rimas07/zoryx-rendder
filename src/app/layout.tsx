@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { FirebaseAnalytics } from "../components/FirebaseAnalytics";
 import { LangProvider } from "../contexts/LangContext";
 import "./globals.css";
 
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <FirebaseAnalytics />
         <LangProvider>{children}</LangProvider>
       </body>
     </html>

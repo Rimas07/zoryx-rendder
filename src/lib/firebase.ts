@@ -1,20 +1,10 @@
-import { initializeApp, getApps } from 'firebase/app';
 import {
   getFirestore, collection, doc,
   getDocs, getDoc, query, orderBy, Timestamp,
 } from 'firebase/firestore';
 import type { Clinic } from '../types/clinic';
 import { MOCK_CLINICS } from './mockData';
-
-// podklucheniya k fb (env)
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-};
+import { app } from './firebase-app';
 
 
 
@@ -38,7 +28,6 @@ const firebaseConfig = {
 }
 
 */
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);// otkrit soedineniya
 export const db = getFirestore(app); // connect to db
 
 function docToClinic(id: string, data: Record<string, unknown>): Clinic {
