@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 interface Props {
   specs: string[];
   selected: string[];
+  specCounts?: Record<string, number>;
   onToggle: (s: string) => void;
   onApply: () => void;
   onReset: () => void;
@@ -24,12 +25,13 @@ interface Props {
 export function FilterPanel({
   specs,
   selected,
+  specCounts,
   onToggle,
   onApply,
   onReset,
   onClose,
 }: Props) {
-  const { t } = useLang();
+  const { t, tSpec } = useLang();
   const [search, setSearch] = useState("");
   const filtered = specs.filter((s) =>
     s.toLowerCase().includes(search.toLowerCase())
@@ -72,7 +74,15 @@ export function FilterPanel({
                     : "bg-transparent border-[#e2dff5] text-[#6b6690] hover:border-[#5b4fcf] hover:text-[#5b4fcf]",
                 ].join(" ")}
               >
-                {s}
+                {tSpec(s)}
+                {specCounts?.[s] !== undefined && (
+                  <span className={[
+                    "ml-1.5 text-[11px] rounded-full px-1.5",
+                    isActive ? "bg-white/25 text-white" : "bg-[#e2dff5] text-[#6b6690]",
+                  ].join(" ")}>
+                    {specCounts[s]}
+                  </span>
+                )}
               </button>
             );
           })}

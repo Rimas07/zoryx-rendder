@@ -1,22 +1,31 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
-const MapView = dynamic(() => import('./MapView/MapView').then(m => m.MapView), { ssr: false });
-import { Search, SlidersHorizontal, X, ChevronLeft, Heart, Map } from 'lucide-react';
-import { useClinics } from '../hooks/useClinics';
-import type { Clinic } from '../types/clinic';
-import { useLang } from '../contexts/LangContext';
-import { Header } from './Header/Header';
-import { FilterPanel } from './FilterPanel/FilterPanel';
-import { ClinicCard } from './ClinicCard/ClinicCard';
-import { ClinicDetail } from './ClinicDetail/ClinicDetail';
-import { WelcomePanel } from './WelcomePanel/WelcomePanel';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+const MapView = dynamic(
+  () => import("./MapView/MapView").then((m) => m.MapView),
+  { ssr: false }
+);
+import {
+  Search,
+  SlidersHorizontal,
+  X,
+  ChevronLeft,
+  Heart,
+  Map,
+} from "lucide-react";
+import { useClinics } from "../hooks/useClinics";
+import type { Clinic } from "../types/clinic";
+import { useLang } from "../contexts/LangContext";
+import { Header } from "./Header/Header";
+import { FilterPanel } from "./FilterPanel/FilterPanel";
+import { ClinicCard } from "./ClinicCard/ClinicCard";
+import { ClinicDetail } from "./ClinicDetail/ClinicDetail";
+import { WelcomePanel } from "./WelcomePanel/WelcomePanel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChatBot } from "./ChatBot/ChatBot";
-
 
 interface Props {
   initialClinics: Clinic[];
@@ -24,16 +33,33 @@ interface Props {
   initialSelectedClinic?: Clinic | null;
 }
 
-export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedClinic = null }: Props) {
-  const { t } = useLang();
+export function ClinicsLayout({
+  initialClinics,
+  orderedSpecs,
+  initialSelectedClinic = null,
+}: Props) {
+  const { t, tSpec } = useLang();
   const router = useRouter();
   const { clinics, search, setSearch } = useClinics(initialClinics);
-  const clinicSpecSet = new Set(clinics.flatMap(c => c.specializations));
-  const allSpecs = orderedSpecs.length > 0
-    ? orderedSpecs.filter(s => clinicSpecSet.has(s))
-    : Array.from(clinicSpecSet).sort();
+  const clinicSpecSet = new Set(clinics.flatMap((c) => c.specializations));
+  const allSpecs =
+    orderedSpecs.length > 0
+      ? orderedSpecs.filter((s) => clinicSpecSet.has(s))
+      : Array.from(clinicSpecSet).sort();
+  const specCounts = Object.fromEntries(
+    allSpecs.map((s) => [
+      s,
+      clinics.filter((c) =>
+        c.specializations.some((cs) =>
+          cs.toLowerCase().includes(s.toLowerCase())
+        )
+      ).length,
+    ])
+  );
 
-  const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(initialSelectedClinic);
+  const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(
+    initialSelectedClinic
+  );
   const [showFilters, setShowFilters] = useState(false);
   const [pendingSpecs, setPendingSpecs] = useState<string[]>([]);
   const [activeSpecs, setActiveSpecs] = useState<string[]>([]);
@@ -41,31 +67,46 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [mapVisible, setMapVisible] = useState(false);
 
-
   const toggleFavorite = (id: string) =>
-    setFavorites(prev => {
+    setFavorites((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
 
   const handleToggleSpec = (s: string) =>
-    setPendingSpecs(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+    setPendingSpecs((prev) =>
+      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
+    );
 
-  const handleApply = () => { setActiveSpecs(pendingSpecs); setShowFilters(false); };
-  const handleReset = () => { setPendingSpecs([]); setActiveSpecs([]); };
+  const handleApply = () => {
+    setActiveSpecs(pendingSpecs);
+    setShowFilters(false);
+  };
+  const handleReset = () => {
+    setPendingSpecs([]);
+    setActiveSpecs([]);
+  };
 
-  const filtered = activeSpecs.length === 0
-    ? clinics
-    : clinics.filter(c =>
-        activeSpecs.some(s =>
-          c.specializations.some(cs => cs.toLowerCase().includes(s.toLowerCase()))
-        )
-      );
+  const filtered =
+    activeSpecs.length === 0
+      ? clinics
+      : clinics.filter((c) =>
+          activeSpecs.some((s) =>
+            c.specializations.some((cs) =>
+              cs.toLowerCase().includes(s.toLowerCase())
+            )
+          )
+        );
 
   const displayed = showFavoritesOnly
-    ? filtered.filter(c => favorites.has(c.id))
+    ? filtered.filter((c) => favorites.has(c.id))
     : filtered;
+
+  const openClinic = (clinic: Clinic) => {
+    setSelectedClinic(clinic);
+    router.push(`/clinic/${clinic.id}`, { scroll: false });
+  };
 
   return (
     <div className="app">
@@ -81,6 +122,7 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
         <FilterPanel
           specs={allSpecs}
           selected={pendingSpecs}
+          specCounts={specCounts}
           onToggle={handleToggleSpec}
           onApply={handleApply}
           onReset={handleReset}
@@ -168,7 +210,12 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
                     variant="secondary"
                     className="gap-1 pr-1 cursor-default"
                   >
-                    {s}
+                    {tSpec(s)}
+                    {specCounts[s] !== undefined && (
+                      <span className="bg-[#5b4fcf] text-white text-[10px] font-semibold rounded-full px-1.5 py-0 leading-4">
+                        {specCounts[s]}
+                      </span>
+                    )}
                     <button
                       className="ml-1 hover:text-[#5b4fcf] transition-colors"
                       onClick={() =>
@@ -207,10 +254,7 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
                 activeSpecs={activeSpecs}
                 isFavorite={favorites.has(clinic.id)}
                 onToggleFavorite={() => toggleFavorite(clinic.id)}
-                onClick={() => {
-                  setSelectedClinic(clinic);
-                  window.history.pushState(null, "", `/k/${clinic.id}`);
-                }}
+                onClick={() => openClinic(clinic)}
               />
             ))}
           </div>
@@ -224,7 +268,10 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
             <ClinicDetail
               key={selectedClinic.id}
               clinic={selectedClinic}
-              onBack={() => setSelectedClinic(null)}
+              onBack={() => {
+                setSelectedClinic(null);
+                router.push("/", { scroll: false });
+              }}
             />
           ) : (
             <WelcomePanel />
@@ -233,15 +280,20 @@ export function ClinicsLayout({ initialClinics, orderedSpecs, initialSelectedCli
       </div>
       <ChatBot
         specializations={allSpecs}
-        clinics={clinics.map(c => ({ id: c.id, name: c.name, specializations: c.specializations, languages: c.languages, address: c.address }))}
+        clinics={clinics.map((c) => ({
+          id: c.id,
+          name: c.name,
+          specializations: c.specializations,
+          languages: c.languages,
+          address: c.address,
+        }))}
         onSpecializationSelect={(spec) => {
           setActiveSpecs([spec]);
         }}
         onClinicSelect={(id) => {
-          const clinic = clinics.find(c => c.id === id);
+          const clinic = clinics.find((c) => c.id === id);
           if (clinic) {
-            setSelectedClinic(clinic);
-            window.history.pushState(null, "", `/k/${clinic.id}`);
+            openClinic(clinic);
           }
         }}
       />

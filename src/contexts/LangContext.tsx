@@ -2,13 +2,14 @@
 
 import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
-import { translations } from '../i18n';
+import { translations, translateSpec } from '../i18n';
 import type { Lang, TKey } from '../i18n';
 
 interface LangContextValue {
   lang: Lang;
   setLang: (l: Lang) => void;
   t: (key: TKey) => string;
+  tSpec: (spec: string) => string;
 }
 
 const LangContext = createContext<LangContextValue | null>(null);
@@ -16,8 +17,9 @@ const LangContext = createContext<LangContextValue | null>(null);
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>('ru');
   const t = (key: TKey) => translations[lang][key];
+  const tSpec = (spec: string) => translateSpec(spec, lang);
   return (
-    <LangContext.Provider value={{ lang, setLang, t }}>
+    <LangContext.Provider value={{ lang, setLang, t, tSpec }}>
       {children}
     </LangContext.Provider>
   );

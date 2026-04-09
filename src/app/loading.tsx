@@ -1,4 +1,20 @@
+"use client";
+import { useEffect, useState } from "react";
+
 export default function Loading() {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    if (sessionStorage.getItem("visited")) {
+      setShow(false);
+    } else {
+      sessionStorage.setItem("visited", "1");
+      setShow(true);
+    }
+  }, []);
+
+  if (!show) return null;
+
   return (
     <div className="flex items-center justify-center h-screen bg-gradient-to-br from-[#622ADA] to-[#0070BB]">
       <video autoPlay loop muted playsInline className="w-48 h-48 object-cover rounded-full">

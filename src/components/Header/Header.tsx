@@ -18,7 +18,7 @@ interface Props {
 }
 
 export function Header({ onLogoClick, mapVisible, onMapToggle }: Props) {
-  const { lang, setLang } = useLang();
+  const { lang, setLang, t } = useLang();
 
   return (
     <header className="bg-gradient-to-r from-[#622ADA] to-[#0070BB] h-[60px] px-5 flex items-center justify-between gap-4 z-[200] shrink-0 max-sm:px-3 max-sm:gap-2">
@@ -42,7 +42,7 @@ export function Header({ onLogoClick, mapVisible, onMapToggle }: Props) {
         className="flex items-center gap-3 text-white text-[14px] font-medium select-none max-sm:hidden cursor-pointer"
         onClick={onMapToggle}
       >
-        <span>Показать на карте</span>
+        <span>{t("showOnMap")}</span>
         <div className="w-11 h-6 rounded-full bg-white/20 flex items-center px-1">
           <div
             className={`w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${

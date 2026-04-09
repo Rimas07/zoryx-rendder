@@ -1,13 +1,11 @@
-import { getClinics, getSpecializations } from '../lib/firebase';
-import { ClinicsLayout } from '../components/ClinicsLayout';
+import { getClinics, getSpecializations } from "../lib/firebase";
+import { ClinicsLayout } from "../components/ClinicsLayout";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function HomePage() {
-  const [clinics, orderedSpecs] = await Promise.all([
-    getClinics().catch(() => []),
-    getSpecializations([]).catch(() => [] as string[]),
-    new Promise<void>(resolve => setTimeout(resolve, 4000)),
-  ] as const).then(([c, s]) => [c, s] as const);
+  const clinics = await getClinics().catch(() => []);
+  const orderedSpecs = await getSpecializations(clinics).catch(() => [] as string[]);
+
   return <ClinicsLayout initialClinics={clinics} orderedSpecs={orderedSpecs} />;
 }
