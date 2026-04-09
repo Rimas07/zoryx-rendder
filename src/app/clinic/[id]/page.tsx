@@ -10,7 +10,7 @@ export const revalidate = 300;
 
 export async function generateStaticParams() {
   const clinics = await getClinics().catch(() => []);
-  return clinics.map((clinic) => ({ id: clinic.id }));
+   return clinics.slice(0, 50).map((clinic) => ({ id: clinic.id }))
 }
 
 export default async function ClinicPage({ params }: Props) {
