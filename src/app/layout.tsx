@@ -22,6 +22,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+      <meta name="google-site-verification" content="VRE7U6b8r4SM_Ygrild3yIhTAppx60-rbABMf3HrwFg" />
+      </head>
       <body>
         <FirebaseAnalytics />
         <LangProvider>{children}</LangProvider>
