@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Phone,
   Heart,
@@ -9,7 +10,7 @@ import {
   Mail,
   MapPin,
   Globe,
-  ArrowLeft,
+  ArrowBigLeft,
 } from 'lucide-react';
 import { useLang } from '../../contexts/LangContext';
 import { getClinicInfo } from '../../types/clinic';
@@ -17,6 +18,9 @@ import type { Clinic } from '../../types/clinic';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import SafeHtml from "../SafeHtml";
+import dynamic from 'next/dynamic';
+
+const MapView = dynamic(() => import('../MapView/MapView').then(m => ({ default: m.MapView })), { ssr: false });
 
 interface Props {
   clinic: Clinic;
@@ -24,8 +28,9 @@ interface Props {
 }
 
 export function ClinicDetail({ clinic, onBack }: Props) {
-  const { t, lang } = useLang();
+  const { t, lang, tSpec } = useLang();
   const infoHtml = getClinicInfo(clinic, lang);
+  const [mapOpen, setMapOpen] = useState(false);
 
   const flags: Record<string, string> = {
     cs: 'https://flagcdn.com/w40/cz.png',
@@ -38,24 +43,15 @@ export function ClinicDetail({ clinic, onBack }: Props) {
     <div className="w-full p-7">
       {/* ── HERO ── */}
       <div className="relative rounded-[20px] bg-gradient-to-br from-[rgba(110,95,210,0.18)] to-[rgba(70,130,220,0.15)] px-5 pt-6 pb-5 mb-[14px] flex flex-col items-center gap-3 text-center">
-        {onBack && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-3 left-3 rounded-full bg-white/80 hover:bg-white/90"
-            onClick={onBack}
-          >
-            <ArrowLeft size={20} />
-          </Button>
-        )}
+        {/* like button */}
         <Button
           variant="ghost"
           size="icon"
           className="absolute top-3 right-3 rounded-full bg-white/80 hover:bg-white/90"
         >
-          <Heart size={22} className="text-[#5b4fcf] fill-[#5b4fcf]" />
+          <Heart size={40} className="text-[#5b4fcf] fill-[#5b4fcf]" />
         </Button>
-
+{/* image of clinic */}
         <div className="w-[120px] h-[120px] rounded-full bg-gradient-to-br from-[#622ADA] to-[#0070BB] p-[3px] shadow-[0_6px_20px_rgba(91,79,207,0.25)]">
           <img
             src={clinic.photoUrl || "/Icon clinics.png"}
@@ -63,24 +59,25 @@ export function ClinicDetail({ clinic, onBack }: Props) {
             className="w-full h-full rounded-full object-cover block bg-white"
           />
         </div>
-
+{/* nam of clinc */}
         <div className="text-[20px] font-bold text-[#5b4fcf] flex items-center justify-center gap-1.5 flex-wrap">
           {clinic.name}
         </div>
 
-        <div className="flex gap-2.5">
-          {clinic.phone && (
-            <Button
-              asChild
-              className="rounded-[22px] px-5 h-11 bg-gradient-to-br from-[#0070BB] to-[#622ADA] hover:opacity-85 transition-opacity shadow-[0_4px_12px_rgba(30,40,80,0.3)]"
-            >
-              <a href={`tel:${clinic.phone}`}>
-                <Phone size={18} strokeWidth={2.5} />
-              </a>
-            </Button>
-          )}
-        </div>
+        {clinic.isPartner && (
+          <img
+            src="https://gsprqyfmodotiezvopiq.supabase.co/storage/v1/object/public/fdsfds/Web%20Zoryx%20partner.png"
+            alt="Zoryx Partner"
+            className="h-[28px] w-auto"
+          />
+        )}
       </div>
+
+      {mapOpen && (
+        <div className="rounded-2xl overflow-hidden mb-3 shadow-[0_2px_12px_rgba(91,79,207,0.08)]" style={{ height: 300 }}>
+          <MapView clinic={clinic} />
+        </div>
+      )}
 
       {/* ── ABOUT ── */}
       <div className="bg-white rounded-2xl px-[18px] py-4 mb-3 shadow-[0_2px_12px_rgba(91,79,207,0.08)]">
@@ -130,7 +127,7 @@ export function ClinicDetail({ clinic, onBack }: Props) {
             <div className="flex flex-wrap gap-[5px] mt-[6px]">
               {clinic.specializations.map((s) => (
                 <Badge key={s} variant="secondary">
-                  {s.replace(/_/g, " ")}
+                  {tSpec(s)}
                 </Badge>
               ))}
             </div>

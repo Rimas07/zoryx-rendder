@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Phone, MessageCircle, Heart, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Clinic } from '../../types/clinic';
+import { useLang } from '../../contexts/LangContext';
 
 interface Props {
   clinic: Clinic;
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggleFavorite, onClick }: Props) {
+  const { tSpec } = useLang();
   const [expanded, setExpanded] = useState(false);
   const MAX_SPECS = 3;
   const unique = [...new Set(clinic.specializations)];
@@ -64,15 +66,7 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
 
         {/* Action buttons */}
         <div className="flex flex-col gap-[6px] shrink-0">
-          {clinic.phone && (
-            <a
-              href={`tel:${clinic.phone}`}
-              className="w-[34px] h-[34px] rounded-full bg-gradient-to-br from-[#3a6fd4] to-[#5b4fcf] flex items-center justify-center text-white shadow-[0_2px_8px_rgba(91,79,207,0.35)] hover:opacity-85 transition-opacity"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Phone size={15} strokeWidth={2.5} />
-            </a>
-          )}
+        
           {clinic.altegioCompanyId && (
             <a
               href={`https://n.novakvita.com/company/${clinic.altegioCompanyId}`}
@@ -100,7 +94,7 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
                   : 'border-[#e2dff5] text-[#6b6690] bg-transparent',
               ].join(' ')}
             >
-              {s.replace(/_/g, ' ')}
+              {tSpec(s)}
             </span>
           ))}
           {!expanded && hiddenCount > 0 && (

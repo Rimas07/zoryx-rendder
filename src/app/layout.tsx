@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { FirebaseAnalytics } from "../components/FirebaseAnalytics";
 import { LangProvider } from "../contexts/LangContext";
 import "./globals.css";
 
@@ -6,7 +7,7 @@ export const metadata: Metadata = {
   title: "Zoryx — Медицинские клиники в Праге",
   description: "Zoryx — медицинский гид по Праге",
   icons: {
-    icon: "https://gsprqyfmodotiezvopiq.supabase.co/storage/v1/object/public/fdsfds/ZORYX%20LOGO%20.png",
+    icon: "https://gsprqyfmodotiezvopiq.supabase.co/storage/v1/object/public/fdsfds/unnamed.jpg",
   },
   openGraph: {
     title: "Zoryx — Медицинские клиники в Праге",
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <FirebaseAnalytics />
         <LangProvider>{children}</LangProvider>
       </body>
     </html>
