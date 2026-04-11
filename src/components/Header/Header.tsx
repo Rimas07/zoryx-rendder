@@ -2,6 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
+
+gsap.registerPlugin(ScrambleTextPlugin);
 import { useLang } from '../../contexts/LangContext';
 import type { Lang } from '../../i18n';
 import {
@@ -21,6 +24,7 @@ interface Props {
 export function Header({ onLogoClick }: Props) {
   const { lang, setLang } = useLang();
   const headerRef = useRef<HTMLElement>(null);
+  const logoTextRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     if (!headerRef.current) return;
@@ -28,6 +32,23 @@ export function Header({ onLogoClick }: Props) {
       { opacity: 0, y: -20 },
       { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }
     );
+  }, []);
+
+  useEffect(() => {
+    if (!logoTextRef.current) return;
+    if (sessionStorage.getItem('zoryx_logo_animated')) return;
+    sessionStorage.setItem('zoryx_logo_animated', '1');
+    gsap.to(logoTextRef.current, {
+      scrambleText: {
+        text: 'Zoryx',
+        chars: 'upperAndLowerCase',
+        revealDelay: 0.1,
+        tweenLength: false,
+      },
+      duration: 1.4,
+      ease: 'none',
+      delay: 0.3,
+    });
   }, []);
 
   return (
@@ -45,7 +66,7 @@ export function Header({ onLogoClick }: Props) {
           className="h-[42px] w-auto max-sm:h-8"
           priority
         />
-        <span className="text-[22px] font-bold text-white tracking-[-0.3px] max-sm:text-[18px]">
+        <span ref={logoTextRef} className="text-[22px] font-bold text-white tracking-[-0.3px] max-sm:text-[18px]">
           Zoryx
         </span>
       </div>
@@ -59,7 +80,7 @@ export function Header({ onLogoClick }: Props) {
           className="flex items-center rounded-lg hover:opacity-85 transition-opacity"
         >
           <img
-            src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+            src="/google-play-badge.svg"
             alt="Google Play"
             width={135}
             height={40}
@@ -73,7 +94,7 @@ export function Header({ onLogoClick }: Props) {
           className="flex items-center rounded-lg hover:opacity-85 transition-opacity"
         >
           <img
-            src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+            src="/app-store-badge.svg"
             alt="App Store"
             width={135}
             height={40}
