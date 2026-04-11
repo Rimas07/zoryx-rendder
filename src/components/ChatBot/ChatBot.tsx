@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
 import { MessageCircle, X, Send } from "lucide-react";
 import { useLang } from "../../contexts/LangContext";
 interface Props {
@@ -14,7 +15,31 @@ interface Props {
 
 export function ChatBot({ specializations, clinics, onSpecializationSelect, onClinicSelect }: Props) {
   const [open, setOpen] = useState(false);
-    const { t, lang } = useLang();
+  const { t, lang } = useLang();
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
+
+  // Pulse animation on the chat button
+  useEffect(() => {
+    if (!btnRef.current || open) return;
+    const tween = gsap.to(btnRef.current, {
+      scale: 1.12,
+      duration: 0.7,
+      repeat: -1,
+      yoyo: true,
+      ease: 'power1.inOut',
+    });
+    return () => { tween.kill(); gsap.set(btnRef.current, { scale: 1 }); };
+  }, [open]);
+
+  // Animate chat window appearing
+  useEffect(() => {
+    if (!open || !chatRef.current) return;
+    gsap.fromTo(chatRef.current,
+      { opacity: 0, y: 16, scale: 0.96 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.28, ease: 'power2.out' }
+    );
+  }, [open]);
    
   const [messages, setMessages] = useState<{ role: "user" | "bot"; text: string }[]>(() => {
     try {
@@ -105,6 +130,7 @@ export function ChatBot({ specializations, clinics, onSpecializationSelect, onCl
     <>
       {/* Кнопка открытия */}
       <button
+        ref={btnRef}
         onClick={() => setOpen(true)}
         className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-[#622ADA] to-[#0070BB] text-white shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity"
       >
@@ -113,7 +139,7 @@ export function ChatBot({ specializations, clinics, onSpecializationSelect, onCl
 
       {/* Чат окно */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 w-[340px] bg-white rounded-2xl shadow-2xl border border-[#e2dff5] flex flex-col overflow-hidden">
+        <div ref={chatRef} className="fixed bottom-24 right-6 z-50 w-[340px] bg-white rounded-2xl shadow-2xl border border-[#e2dff5] flex flex-col overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-[#622ADA] to-[#0070BB] px-4 py-3 flex items-center justify-between">
             <div>

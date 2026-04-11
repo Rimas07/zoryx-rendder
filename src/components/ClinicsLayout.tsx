@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { gsap } from "gsap";
 import { useRouter } from "next/navigation";
 import { Search, SlidersHorizontal, X, ChevronLeft, Heart } from "lucide-react";
 import { useClinics } from "../hooks/useClinics";
@@ -99,9 +100,41 @@ export function ClinicsLayout({
   const [openWithMap, setOpenWithMap] = useState(false);
   const [visibleCount, setVisibleCount] = useState(20);
   const loaderRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const chipsRef = useRef<HTMLDivElement>(null);
+  const allBtnRef = useRef<HTMLButtonElement>(null);
+  const favBtnRef = useRef<HTMLButtonElement>(null);
 
   // Сбрасываем счётчик при изменении фильтров/поиска
   useEffect(() => { setVisibleCount(20); }, [displayed.length]);
+
+  // Анимация карточек при появлении
+  useEffect(() => {
+    if (!listRef.current) return;
+    const cards = listRef.current.querySelectorAll(':scope > div');
+    if (cards.length === 0) return;
+    gsap.fromTo(cards,
+      { opacity: 0, y: 24 },
+      { opacity: 1, y: 0, duration: 0.35, stagger: 0.05, ease: "power2.out", clearProps: "all" }
+    );
+  }, [displayed.length, visibleCount]);
+
+  // Анимация chips при появлении фильтров
+  useEffect(() => {
+    if (!chipsRef.current || activeSpecs.length === 0) return;
+    const chips = chipsRef.current.querySelectorAll(':scope > *');
+    gsap.fromTo(chips,
+      { opacity: 0, scale: 0.75 },
+      { opacity: 1, scale: 1, duration: 0.22, stagger: 0.04, ease: 'back.out(2)' }
+    );
+  }, [activeSpecs.length]);
+
+  // Tap-анимация на кнопках All / Избранное
+  const handleToggleFavoritesOnly = (value: boolean) => {
+    setShowFavoritesOnly(value);
+    const target = value ? favBtnRef.current : allBtnRef.current;
+    if (target) gsap.fromTo(target, { scale: 0.88 }, { scale: 1, duration: 0.28, ease: 'back.out(2.5)' });
+  };
 
   // Подгружаем ещё 20 когда пользователь доскроллил до низа
   useEffect(() => {
@@ -172,7 +205,8 @@ export function ClinicsLayout({
           {/* All / Favorites toggle */}
           <div className="flex gap-2 px-[14px] pb-2">
             <button
-              onClick={() => setShowFavoritesOnly(false)}
+              ref={allBtnRef}
+              onClick={() => handleToggleFavoritesOnly(false)}
               className={[
                 "px-4 py-[7px] rounded-full text-[13px] font-medium transition-colors border-[1.5px]",
                 !showFavoritesOnly
@@ -183,7 +217,8 @@ export function ClinicsLayout({
               {t("allClinics")}
             </button>
             <button
-              onClick={() => setShowFavoritesOnly(true)}
+              ref={favBtnRef}
+              onClick={() => handleToggleFavoritesOnly(true)}
               className={[
                 "px-4 py-[7px] rounded-full text-[13px] font-medium transition-colors border-[1.5px] flex items-center gap-1.5",
                 showFavoritesOnly
@@ -205,7 +240,7 @@ export function ClinicsLayout({
 
           {activeSpecs.length > 0 && (
             <div className="active-filters">
-              <div className="active-filters-chips">
+              <div ref={chipsRef} className="active-filters-chips">
                 {activeSpecs.map((s) => (
                   <Badge
                     key={s}
@@ -240,7 +275,7 @@ export function ClinicsLayout({
             </div>
           )}
 
-          <div className="clinics-list">
+          <div className="clinics-list" ref={listRef}>
             {displayed.length === 0 && (
               <div className="state-center">
                 <div className="state-icon">🔍</div>
