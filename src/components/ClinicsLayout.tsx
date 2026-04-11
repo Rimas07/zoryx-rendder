@@ -1,20 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
-const MapView = dynamic(
-  () => import("./MapView/MapView").then((m) => m.MapView),
-  { ssr: false }
-);
-import {
-  Search,
-  SlidersHorizontal,
-  X,
-  ChevronLeft,
-  Heart,
-  Map,
-} from "lucide-react";
+import { Search, SlidersHorizontal, X, ChevronLeft, Heart } from "lucide-react";
 import { useClinics } from "../hooks/useClinics";
 import type { Clinic } from "../types/clinic";
 import { useLang } from "../contexts/LangContext";
@@ -25,7 +13,12 @@ import { ClinicDetail } from "./ClinicDetail/ClinicDetail";
 import { WelcomePanel } from "./WelcomePanel/WelcomePanel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChatBot } from "./ChatBot/ChatBot";
+import dynamic from "next/dynamic";
+
+const ChatBot = dynamic(
+  () => import("./ChatBot/ChatBot").then((m) => m.ChatBot),
+  { ssr: false }
+);
 
 interface Props {
   initialClinics: Clinic[];
@@ -39,6 +32,7 @@ export function ClinicsLayout({
   initialSelectedClinic = null,
 }: Props) {
   const { t, tSpec } = useLang();
+
   const router = useRouter();
   const { clinics, search, setSearch } = useClinics(initialClinics);
   const clinicSpecSet = new Set(clinics.flatMap((c) => c.specializations));
@@ -65,7 +59,6 @@ export function ClinicsLayout({
   const [activeSpecs, setActiveSpecs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [mapVisible, setMapVisible] = useState(false);
 
   const toggleFavorite = (id: string) =>
     setFavorites((prev) => {
@@ -103,7 +96,26 @@ export function ClinicsLayout({
     ? filtered.filter((c) => favorites.has(c.id))
     : filtered;
 
-  const openClinic = (clinic: Clinic) => {
+  const [openWithMap, setOpenWithMap] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(20);
+  const loaderRef = useRef<HTMLDivElement>(null);
+
+  // Сбрасываем счётчик при изменении фильтров/поиска
+  useEffect(() => { setVisibleCount(20); }, [displayed.length]);
+
+  // Подгружаем ещё 20 когда пользователь доскроллил до низа
+  useEffect(() => {
+    const el = loaderRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) setVisibleCount((n) => n + 20);
+    }, { threshold: 0.1 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const openClinic = (clinic: Clinic, withMap = false) => {
+    setOpenWithMap(withMap);
     setSelectedClinic(clinic);
     router.push(`/clinic/${clinic.id}`, { scroll: false });
   };
@@ -115,8 +127,6 @@ export function ClinicsLayout({
           setSelectedClinic(null);
           router.push("/");
         }}
-        mapVisible={mapVisible}
-        onMapToggle={() => setMapVisible((v) => !v)}
       />
       {showFilters && (
         <FilterPanel
@@ -130,14 +140,6 @@ export function ClinicsLayout({
         />
       )}
       <div className={`main-layout${selectedClinic ? " show-detail" : ""}`}>
-        {/* Floating map button — mobile only */}
-        <button
-          onClick={() => setMapVisible((v) => !v)}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 px-5 py-3 rounded-full shadow-lg text-white text-[14px] font-semibold sm:hidden bg-gradient-to-r from-[#622ADA] to-[#0070BB]"
-        >
-          <Map size={18} />
-          {mapVisible ? "Скрыть карту" : "Показать на карте"}
-        </button>
         {/* ── Left panel ── */}
         <div className="panel-left">
           <div className="search-area">
@@ -246,7 +248,7 @@ export function ClinicsLayout({
                 <p>{t("noResultsHint")}</p>
               </div>
             )}
-            {displayed.map((clinic) => (
+            {displayed.slice(0, visibleCount).map((clinic) => (
               <ClinicCard
                 key={clinic.id}
                 clinic={clinic}
@@ -255,19 +257,24 @@ export function ClinicsLayout({
                 isFavorite={favorites.has(clinic.id)}
                 onToggleFavorite={() => toggleFavorite(clinic.id)}
                 onClick={() => openClinic(clinic)}
+                onMapClick={() => openClinic(clinic, true)}
               />
             ))}
+            {visibleCount < displayed.length && (
+              <div ref={loaderRef} className="py-4 text-center text-[13px] text-[#9d99c0]">
+                Загрузка...
+              </div>
+            )}
           </div>
         </div>
 
         {/* ── Right panel ── */}
         <div className="panel-right">
-          {selectedClinic && mapVisible ? (
-            <MapView clinic={selectedClinic} />
-          ) : selectedClinic ? (
+          {selectedClinic ? (
             <ClinicDetail
               key={selectedClinic.id}
               clinic={selectedClinic}
+              initialMapOpen={openWithMap}
               onBack={() => {
                 setSelectedClinic(null);
                 router.push("/", { scroll: false });

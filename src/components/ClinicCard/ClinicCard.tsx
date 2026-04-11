@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Phone, MessageCircle, Heart, ChevronDown, ChevronUp } from 'lucide-react';
+import { Phone, MessageCircle, Heart, ChevronDown, ChevronUp, MapPin } from 'lucide-react';
 import type { Clinic } from '../../types/clinic';
 import { useLang } from '../../contexts/LangContext';
+import Image from 'next/image';
+
 
 interface Props {
   clinic: Clinic;
@@ -12,9 +14,10 @@ interface Props {
   isFavorite: boolean;
   onToggleFavorite: () => void;
   onClick: () => void;
+  onMapClick: () => void;
 }
 
-export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggleFavorite, onClick }: Props) {
+export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggleFavorite, onClick, onMapClick }: Props) {
   const { tSpec } = useLang();
   const [expanded, setExpanded] = useState(false);
   const MAX_SPECS = 3;
@@ -29,25 +32,23 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
   return (
     <div
       className={[
-        'bg-white rounded-2xl p-[14px] cursor-pointer transition-all border-[1.5px]',
-        'shadow-[0_2px_12px_rgba(91,79,207,0.08)]',
-        'hover:border-[#c5bff0] hover:shadow-[0_4px_20px_rgba(91,79,207,0.15)]',
-        isActive ? 'border-[#5b4fcf]' : 'border-transparent',
-      ].join(' ')}
+        "bg-white rounded-2xl p-[14px] cursor-pointer transition-all border-[1.5px]",
+        "shadow-[0_2px_12px_rgba(91,79,207,0.08)]",
+        "hover:border-[#c5bff0] hover:shadow-[0_4px_20px_rgba(91,79,207,0.15)]",
+        isActive ? "border-[#5b4fcf]" : "border-transparent",
+      ].join(" ")}
       onClick={onClick}
     >
-      {/* Top row */}
       <div className="flex items-start gap-3">
-        {/* Logo */}
         <div className="shrink-0 p-[2.5px] rounded-full bg-gradient-to-br from-[#622ADA] to-[#0070BB]">
-          <img
-            src={clinic.photoUrl || '/Icon clinics.png'}
+          <Image
+            src={clinic.photoUrl || "/Icon clinics.png"}
             alt={clinic.name}
-            className="w-[52px] h-[52px] rounded-full object-cover block bg-[#ede9ff]"
+            width={52}
+            height={52}
+            className="rounded-full object-cover block bg-[#ede9ff]"
           />
         </div>
-
-        {/* Name / badge / address */}
         <div className="flex-1 min-w-0">
           <div className="text-[14px] font-semibold text-[#1a1535] mb-[2px] truncate">
             {clinic.name}
@@ -60,13 +61,32 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
             />
           )}
           {clinic.address && (
-            <div className="text-[12px] text-[#6b6690] truncate">{clinic.address}</div>
+            <div className="text-[12px] text-[#6b6690] truncate">
+              {clinic.address}
+            </div>
           )}
         </div>
-
-        {/* Action buttons */}
         <div className="flex flex-col gap-[6px] shrink-0">
-        
+          {clinic.phone && (
+            <a
+              href={`tel:${clinic.phone}`}
+              className="w-[34px] h-[34px] rounded-full bg-gradient-to-br from-[#622ADA] to-[#0070BB] flex items-center justify-center text-white shadow-[0_2px_8px_rgba(91,79,207,0.35)] hover:opacity-85 transition-opacity"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Phone size={15} strokeWidth={2.5} />
+            </a>
+          )}
+          {clinic.address && (
+            <button
+              className="w-[34px] h-[34px] rounded-full bg-gradient-to-br from-[#622ADA] to-[#0070BB] flex items-center justify-center text-white shadow-[0_2px_8px_rgba(91,79,207,0.35)] hover:opacity-85 transition-opacity"
+              onClick={(e) => {
+                e.stopPropagation();
+                onMapClick();
+              }}
+            >
+              <MapPin size={15} strokeWidth={2.5} />
+            </button>
+          )}
           {clinic.altegioCompanyId && (
             <a
               href={`https://n.novakvita.com/company/${clinic.altegioCompanyId}`}
@@ -81,25 +101,27 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
         </div>
       </div>
 
-      {/* Specialization tags */}
       {visibleSpecs.length > 0 && (
         <div className="flex flex-wrap gap-[5px] mt-[10px] items-center">
           {visibleSpecs.map((s) => (
             <span
               key={s}
               className={[
-                'px-[10px] py-[3px] rounded-full text-[11px] font-medium border-[1.5px] transition-colors',
+                "px-[10px] py-[3px] rounded-full text-[11px] font-medium border-[1.5px] transition-colors",
                 activeSpecs.includes(s)
-                  ? 'border-[#5b4fcf] text-[#5b4fcf] bg-[#ede9ff]'
-                  : 'border-[#e2dff5] text-[#6b6690] bg-transparent',
-              ].join(' ')}
+                  ? "border-[#5b4fcf] text-[#5b4fcf] bg-[#ede9ff]"
+                  : "border-[#e2dff5] text-[#6b6690] bg-transparent",
+              ].join(" ")}
             >
               {tSpec(s)}
             </span>
           ))}
           {!expanded && hiddenCount > 0 && (
             <button
-              onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpanded(true);
+              }}
               className="text-[11px] text-[#9d99c0] hover:text-[#5b4fcf] transition-colors flex items-center gap-0.5"
             >
               +{hiddenCount} <ChevronDown size={12} />
@@ -107,7 +129,10 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
           )}
           {expanded && (
             <button
-              onClick={(e) => { e.stopPropagation(); setExpanded(false); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpanded(false);
+              }}
               className="text-[11px] text-[#9d99c0] hover:text-[#5b4fcf] transition-colors flex items-center gap-0.5 w-full mt-1"
             >
               <ChevronUp size={12} /> свернуть
@@ -116,14 +141,18 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
         </div>
       )}
 
-      {/* Favorite */}
       <button
-        onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleFavorite();
+        }}
         className="flex items-center gap-[5px] mt-2 text-[12px] hover:opacity-80 transition-opacity"
       >
         <Heart
           size={21}
-          className={isFavorite ? 'text-[#5b4fcf] fill-[#5b4fcf]' : 'text-[#9d99c0]'}
+          className={
+            isFavorite ? "text-[#5b4fcf] fill-[#5b4fcf]" : "text-[#9d99c0]"
+          }
         />
       </button>
     </div>
