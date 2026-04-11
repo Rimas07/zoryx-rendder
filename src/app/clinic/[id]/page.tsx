@@ -1,4 +1,4 @@
-import { getClinic, getClinics } from '../../../lib/firebase';
+import { getClinic, getClinics, getSpecializations } from '../../../lib/firebase';
 import { ClinicsLayout } from '../../../components/ClinicsLayout';
 import { notFound } from 'next/navigation';
 
@@ -15,14 +15,19 @@ export async function generateStaticParams() {
 
 export default async function ClinicPage({ params }: Props) {
   const { id } = await params;
-  const selectedClinic = await getClinic(id).catch(() => null);
+  const [selectedClinic, clinics] = await Promise.all([
+    getClinic(id).catch(() => null),
+    getClinics().catch(() => []),
+  ]);
 
   if (!selectedClinic) notFound();
 
+  const orderedSpecs = await getSpecializations(clinics).catch(() => [] as string[]);
+
   return (
     <ClinicsLayout
-      initialClinics={[]}
-      orderedSpecs={[]}
+      initialClinics={clinics}
+      orderedSpecs={orderedSpecs}
       initialSelectedClinic={selectedClinic}
     />
   );

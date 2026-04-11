@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import { useRouter } from "next/navigation";
 import { Search, SlidersHorizontal, X, ChevronLeft, Heart } from "lucide-react";
 import { useClinics } from "../hooks/useClinics";
 import type { Clinic } from "../types/clinic";
@@ -33,28 +32,12 @@ export function ClinicsLayout({
   initialSelectedClinic = null,
 }: Props) {
   const { t, tSpec } = useLang();
-  const router = useRouter();
 
-  const [allClinics, setAllClinics] = useState<Clinic[]>(initialClinics);
-  const [fetchedOrderedSpecs, setFetchedOrderedSpecs] = useState<string[]>(orderedSpecs);
-
-  // If clinic detail page — fetch list client-side to keep HTML small
-  useEffect(() => {
-    if (initialClinics.length > 0) return;
-    fetch('/api/clinics')
-      .then((r) => r.json())
-      .then(({ clinics, orderedSpecs: specs }) => {
-        setAllClinics(clinics);
-        setFetchedOrderedSpecs(specs);
-      })
-      .catch(() => {});
-  }, []);
-
-  const { clinics, search, setSearch } = useClinics(allClinics);
+  const { clinics, search, setSearch } = useClinics(initialClinics);
   const clinicSpecSet = new Set(clinics.flatMap((c) => c.specializations));
   const allSpecs =
-    fetchedOrderedSpecs.length > 0
-      ? fetchedOrderedSpecs.filter((s) => clinicSpecSet.has(s))
+    orderedSpecs.length > 0
+      ? orderedSpecs.filter((s) => clinicSpecSet.has(s))
       : Array.from(clinicSpecSet).sort();
   const specCounts = Object.fromEntries(
     allSpecs.map((s) => [
@@ -123,18 +106,15 @@ export function ClinicsLayout({
   // Сбрасываем счётчик при изменении фильтров/поиска
   useEffect(() => { setVisibleCount(20); }, [displayed.length]);
 
-  // Анимация карточек при появлении — deferred
+  // Анимация карточек при появлении
   useEffect(() => {
-    const id = requestIdleCallback(() => {
-      if (!listRef.current) return;
-      const cards = listRef.current.querySelectorAll(':scope > div');
-      if (cards.length === 0) return;
-      gsap.fromTo(cards,
-        { opacity: 0, y: 24 },
-        { opacity: 1, y: 0, duration: 0.35, stagger: 0.05, ease: "power2.out", clearProps: "all" }
-      );
-    }, { timeout: 500 });
-    return () => cancelIdleCallback(id);
+    if (!listRef.current) return;
+    const cards = listRef.current.querySelectorAll(':scope > div');
+    if (cards.length === 0) return;
+    gsap.fromTo(cards,
+      { opacity: 0, y: 24 },
+      { opacity: 1, y: 0, duration: 0.35, stagger: 0.05, ease: "power2.out", clearProps: "all" }
+    );
   }, [displayed.length, visibleCount]);
 
   // Анимация chips при появлении фильтров
@@ -168,7 +148,7 @@ export function ClinicsLayout({
   const openClinic = (clinic: Clinic, withMap = false) => {
     setOpenWithMap(withMap);
     setSelectedClinic(clinic);
-    router.push(`/clinic/${clinic.id}`, { scroll: false });
+    window.history.pushState(null, '', `/clinic/${clinic.id}`);
   };
 
   return (
@@ -176,7 +156,7 @@ export function ClinicsLayout({
       <Header
         onLogoClick={() => {
           setSelectedClinic(null);
-          router.push("/");
+          window.history.pushState(null, '', '/');
         }}
       />
       {showFilters && (
@@ -330,7 +310,7 @@ export function ClinicsLayout({
               initialMapOpen={openWithMap}
               onBack={() => {
                 setSelectedClinic(null);
-                router.push("/", { scroll: false });
+                window.history.pushState(null, '', '/');
               }}
             />
           ) : (

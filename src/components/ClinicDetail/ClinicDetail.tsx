@@ -40,18 +40,15 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
   const specsRef = useRef<HTMLDivElement>(null);
   const bookBtnRef = useRef<HTMLDivElement>(null);
 
-  // Blocks appear in sequence — deferred so it doesn't block hydration
+  // Blocks appear in sequence
   useEffect(() => {
-    const id = requestIdleCallback(() => {
-      if (!contentRef.current) return;
-      const blocks = contentRef.current.querySelectorAll(':scope > *');
-      gsap.fromTo(
-        blocks,
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.4, stagger: 0.08, ease: 'power2.out', clearProps: 'all' }
-      );
-    }, { timeout: 300 });
-    return () => cancelIdleCallback(id);
+    if (!contentRef.current) return;
+    const blocks = contentRef.current.querySelectorAll(':scope > *');
+    gsap.fromTo(
+      blocks,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.4, stagger: 0.08, ease: 'power2.out', clearProps: 'all' }
+    );
   }, [clinic.id]);
 
   // Partner badge pulse
@@ -146,6 +143,7 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
                 alt={clinic.name}
                 width={120}
                 height={120}
+                sizes="120px"
                 priority
                 className="rounded-full object-cover block bg-white"
               />
@@ -166,13 +164,12 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
             <div className="flex gap-2.5">
               {clinic.phone && (
                 <Button asChild className="rounded-[22px] px-5 h-11 bg-gradient-to-br from-[#0070BB] to-[#622ADA] hover:opacity-85 transition-opacity shadow-[0_4px_12px_rgba(30,40,80,0.3)]">
-                  <a href={`tel:${clinic.phone}`} aria-label={`Позвонить в ${clinic.name}`}><Phone size={18} strokeWidth={2.5} /></a>
+                  <a href={`tel:${clinic.phone}`}><Phone size={18} strokeWidth={2.5} /></a>
                 </Button>
               )}
               {clinic.address && (
                 <Button
                   onClick={() => setMapOpen(true)}
-                  aria-label="Показать на карте"
                   className="rounded-[22px] px-5 h-11 bg-gradient-to-br from-[#0070BB] to-[#622ADA] hover:opacity-85 transition-opacity shadow-[0_4px_12px_rgba(30,40,80,0.3)]"
                 >
                   <MapPin size={18} strokeWidth={2.5} />

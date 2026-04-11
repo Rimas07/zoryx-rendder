@@ -25,20 +25,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru" className={inter.className}>
+    <html lang="en" className={inter.className}>
       <head>
-        <meta charSet="utf-8" />
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
-        <link rel="preconnect" href="https://flagcdn.com" />
-        <link rel="dns-prefetch" href="https://tile.jawg.io" />
-        <link rel="dns-prefetch" href="https://api.mapy.cz" />
+        <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
       </head>
       <body>
         <InitialLoader />
         <FirebaseAnalytics />
-        <LangProvider>
-          <main style={{ display: 'contents' }}>{children}</main>
-        </LangProvider>
+        <LangProvider>{children}</LangProvider>
       </body>
     </html>
   );

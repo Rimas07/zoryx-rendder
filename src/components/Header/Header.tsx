@@ -80,7 +80,7 @@ export function Header({ onLogoClick }: Props) {
           className="flex items-center rounded-lg hover:opacity-85 transition-opacity"
         >
           <img
-            src="/google-play-badge.svg"
+            src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
             alt="Google Play"
             width={135}
             height={40}
@@ -94,7 +94,7 @@ export function Header({ onLogoClick }: Props) {
           className="flex items-center rounded-lg hover:opacity-85 transition-opacity"
         >
           <img
-            src="/app-store-badge.svg"
+            src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
             alt="App Store"
             width={135}
             height={40}
