@@ -35,21 +35,25 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
   const hiddenCount = Math.max(0, unique.length - MAX_SPECS);
 
   const handleMouseEnter = () => {
-    gsap.to(cardRef.current, {
-      y: -3,
-      boxShadow: '0 8px 28px rgba(91,79,207,0.22)',
-      duration: 0.22,
-      ease: 'power2.out',
-    });
+    if (window.matchMedia('(hover: hover)').matches) {
+      gsap.to(cardRef.current, {
+        y: -3,
+        boxShadow: '0 8px 28px rgba(91,79,207,0.22)',
+        duration: 0.22,
+        ease: 'power2.out',
+      });
+    }
   };
 
   const handleMouseLeave = () => {
-    gsap.to(cardRef.current, {
-      y: 0,
-      boxShadow: '0 2px 12px rgba(91,79,207,0.08)',
-      duration: 0.22,
-      ease: 'power2.out',
-    });
+    if (window.matchMedia('(hover: hover)').matches) {
+      gsap.to(cardRef.current, {
+        y: 0,
+        boxShadow: '0 2px 12px rgba(91,79,207,0.08)',
+        duration: 0.22,
+        ease: 'power2.out',
+      });
+    }
   };
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
@@ -109,6 +113,7 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
           {clinic.phone && (
             <a
               href={`tel:${clinic.phone}`}
+              aria-label={`Позвонить в ${clinic.name}`}
               className="w-[34px] h-[34px] rounded-full bg-gradient-to-br from-[#622ADA] to-[#0070BB] flex items-center justify-center text-white shadow-[0_2px_8px_rgba(91,79,207,0.35)] hover:opacity-85 transition-opacity"
               onClick={(e) => e.stopPropagation()}
             >
@@ -117,6 +122,7 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
           )}
           {clinic.address && (
             <button
+              aria-label={`Показать на карте: ${clinic.name}`}
               className="w-[34px] h-[34px] rounded-full bg-gradient-to-br from-[#622ADA] to-[#0070BB] flex items-center justify-center text-white shadow-[0_2px_8px_rgba(91,79,207,0.35)] hover:opacity-85 transition-opacity"
               onClick={(e) => {
                 e.stopPropagation();
@@ -131,6 +137,7 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
               href={`https://n.novakvita.com/company/${clinic.altegioCompanyId}`}
               target="_blank"
               rel="noreferrer"
+              aria-label={`Записаться в ${clinic.name}`}
               className="w-[34px] h-[34px] rounded-full bg-gradient-to-br from-[#6b5dd3] to-[#4a87d8] flex items-center justify-center text-white shadow-[0_2px_8px_rgba(91,79,207,0.35)] hover:opacity-85 transition-opacity"
               onClick={(e) => e.stopPropagation()}
             >
@@ -183,6 +190,7 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
       <button
         ref={heartRef}
         onClick={handleFavoriteClick}
+        aria-label={isFavorite ? `Убрать из избранного` : `Добавить в избранное`}
         className="flex items-center gap-[5px] mt-2 text-[12px] hover:opacity-80 transition-opacity"
       >
         <Heart
