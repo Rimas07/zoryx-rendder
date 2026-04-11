@@ -106,7 +106,7 @@ export function ClinicsLayout({
   // Сбрасываем счётчик при изменении фильтров/поиска
   useEffect(() => { setVisibleCount(20); }, [displayed.length]);
 
-  // Анимация карточек при появлении
+  // Анимация при смене фильтра/поиска — все карточки
   useEffect(() => {
     if (!listRef.current) return;
     const cards = listRef.current.querySelectorAll(':scope > div');
@@ -115,7 +115,19 @@ export function ClinicsLayout({
       { opacity: 0, y: 24 },
       { opacity: 1, y: 0, duration: 0.35, stagger: 0.05, ease: "power2.out", clearProps: "all" }
     );
-  }, [displayed.length, visibleCount]);
+  }, [displayed.length]);
+
+  // Анимация при подгрузке следующей порции — только новые карточки
+  useEffect(() => {
+    if (!listRef.current) return;
+    const cards = Array.from(listRef.current.querySelectorAll(':scope > div'));
+    if (cards.length === 0) return;
+    const newCards = cards.slice(-20);
+    gsap.fromTo(newCards,
+      { opacity: 0, y: 24 },
+      { opacity: 1, y: 0, duration: 0.35, stagger: 0.04, ease: "power2.out", clearProps: "all" }
+    );
+  }, [visibleCount]);
 
   // Анимация chips при появлении фильтров
   useEffect(() => {
