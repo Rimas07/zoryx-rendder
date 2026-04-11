@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
 import { useLang } from '../../contexts/LangContext';
 import type { Lang } from '../../i18n';
 import {
@@ -18,9 +20,18 @@ interface Props {
 
 export function Header({ onLogoClick }: Props) {
   const { lang, setLang } = useLang();
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!headerRef.current) return;
+    gsap.fromTo(headerRef.current,
+      { opacity: 0, y: -20 },
+      { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }
+    );
+  }, []);
 
   return (
-    <header className="bg-gradient-to-r from-[#622ADA] to-[#0070BB] h-[60px] px-5 flex items-center justify-between gap-4 z-[200] shrink-0 max-sm:px-3 max-sm:gap-2">
+    <header ref={headerRef} className="bg-gradient-to-r from-[#622ADA] to-[#0070BB] h-[60px] px-5 flex items-center justify-between gap-4 z-[200] shrink-0 max-sm:px-3 max-sm:gap-2">
       {/* Logo */}
       <div
         className="flex items-center gap-2 shrink-0 cursor-pointer"

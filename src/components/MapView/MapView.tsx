@@ -16,82 +16,88 @@ export function MapView({ clinic }: Props) {
     if (!clinic.address || !containerRef.current) return;
 
     const controller = new AbortController();
-    let initTimer: ReturnType<typeof setTimeout>;
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
-    // Delay map init until after the 3D flip animation finishes (700ms)
-    // Otherwise Leaflet measures the container while it's still hidden/rotating
-    // and places the center incorrectly
-    initTimer = setTimeout(() => {
-      if (controller.signal.aborted || !containerRef.current) return;
+    import("leaflet").then(async (L) => {
+      if (controller.signal.aborted) return;
 
-      import("leaflet").then(async (L) => {
-        if (controller.signal.aborted || !containerRef.current) return;
+      const res = await fetch(
+        `https://api.mapy.cz/v1/geocode?query=${encodeURIComponent(clinic.address)}&lang=cs&apikey=${process.env.NEXT_PUBLIC_MAPYCZ_KEY}`,
+        { signal: controller.signal }
+      ).catch(() => null);
 
-        if (mapRef.current) {
-          mapRef.current.remove();
-          mapRef.current = null;
-        }
+      if (!res || controller.signal.aborted || !containerRef.current) return;
 
-        const res = await fetch(
-          `https://api.mapy.cz/v1/geocode?query=${encodeURIComponent(clinic.address)}&lang=cs&apikey=${process.env.NEXT_PUBLIC_MAPYCZ_KEY}`,
-          { signal: controller.signal }
-        ).catch(() => null);
+      const data = await res.json();
+      const item = data.items?.[0];
+      if (!item || controller.signal.aborted || !containerRef.current) return;
 
-        if (!res || controller.signal.aborted || !containerRef.current) return;
+      const { lat, lon } = item.position;
 
-        const data = await res.json();
-        const item = data.items?.[0];
-        if (!item || controller.signal.aborted || !containerRef.current) return;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
 
-        const { lat, lon } = item.position;
-
-        const photoUrl = clinic.photoUrl || '/Icon clinics.png';
-        const icon = L.divIcon({
-          className: "",
-          html: `<div style="
-            background: linear-gradient(135deg, #622ADA, #0070BB);
-            border-radius: 50%;
-            width: 46px;
-            height: 46px;
-            padding: 2.5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.35);
-          ">
-            <img src="${photoUrl}" style="
-              width: 100%;
-              height: 100%;
-              border-radius: 50%;
-              object-fit: cover;
-              display: block;
-              background: #ede9ff;
-            " />
-          </div>`,
-          iconSize: [46, 46],
-          iconAnchor: [23, 46],
-        });
-
-        mapRef.current = L.map(containerRef.current, { zoomControl: true }).setView([lat, lon], 15);
-
-        L.tileLayer(
-          "https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token={accessToken}",
-          {
-            attribution: "© JawgMaps © OpenStreetMap",
-            accessToken: process.env.NEXT_PUBLIC_JAWG_TOKEN,
-          } as L.TileLayerOptions & { accessToken: string }
-        ).addTo(mapRef.current);
-
-        L.marker([lat, lon], { icon })
-          .addTo(mapRef.current)
-          .bindPopup(`<b>${clinic.name}</b><br/>${clinic.address}`, { offset: [0, -50], autoPan: false })
-          .openPopup();
-
-        // Final re-center after tiles load
-        mapRef.current.invalidateSize();
-        mapRef.current.setView([lat, lon], 15);
+      const photoUrl = clinic.photoUrl || '/Icon clinics.png';
+      const icon = L.divIcon({
+        className: "",
+        html: `<style>
+          @keyframes markerDrop {
+            0%   { transform: translateY(-28px) scale(0.65); opacity: 0; }
+            70%  { transform: translateY(4px) scale(1.08); opacity: 1; }
+            85%  { transform: translateY(-6px) scale(0.97); }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+          }
+        </style>
+        <div style="
+          background: linear-gradient(135deg, #622ADA, #0070BB);
+          border-radius: 50%; width: 46px; height: 46px; padding: 2.5px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+          animation: markerDrop 0.55s cubic-bezier(0.34,1.56,0.64,1) both;
+        ">
+          <img src="${photoUrl}" style="
+            width: 100%; height: 100%; border-radius: 50%;
+            object-fit: cover; display: block; background: #ede9ff;
+          " />
+        </div>`,
+        iconSize: [46, 46],
+        iconAnchor: [23, 23],
       });
-    }, 750);
+
+      mapRef.current = L.map(containerRef.current, {
+        zoomControl: true,
+        center: [lat, lon],
+        zoom: 15,
+      });
+
+      L.tileLayer(
+        "https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token={accessToken}",
+        {
+          attribution: "© JawgMaps © OpenStreetMap",
+          accessToken: process.env.NEXT_PUBLIC_JAWG_TOKEN,
+        } as L.TileLayerOptions & { accessToken: string }
+      ).addTo(mapRef.current);
+
+      L.marker([lat, lon], { icon })
+        .addTo(mapRef.current)
+        .bindPopup(`<b>${clinic.name}</b><br/>${clinic.address}`, { offset: [0, -25], autoPan: false })
+        .openPopup();
+
+      // Многократно пересчитываем размер и центр — чтобы поймать момент
+      // после завершения 3D flip анимации (700ms)
+      [0, 200, 500, 800, 1100].forEach((delay) => {
+        const t = setTimeout(() => {
+          if (!mapRef.current) return;
+          mapRef.current.invalidateSize({ animate: false });
+          mapRef.current.setView([lat, lon], 15, { animate: false });
+        }, delay);
+        timers.push(t);
+      });
+    });
 
     return () => {
-      clearTimeout(initTimer);
+      timers.forEach(clearTimeout);
       controller.abort();
       mapRef.current?.remove();
       mapRef.current = null;

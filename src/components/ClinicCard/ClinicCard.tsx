@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef } from 'react';
+import { gsap } from 'gsap';
 import { Phone, MessageCircle, Heart, ChevronDown, ChevronUp, MapPin } from 'lucide-react';
+import { useState } from 'react';
 import type { Clinic } from '../../types/clinic';
 import { useLang } from '../../contexts/LangContext';
 import Image from 'next/image';
@@ -20,6 +22,9 @@ interface Props {
 export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggleFavorite, onClick, onMapClick }: Props) {
   const { tSpec } = useLang();
   const [expanded, setExpanded] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const heartRef = useRef<HTMLButtonElement>(null);
+
   const MAX_SPECS = 3;
   const unique = [...new Set(clinic.specializations)];
   const sorted = [
@@ -29,15 +34,46 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
   const visibleSpecs = expanded ? sorted : sorted.slice(0, MAX_SPECS);
   const hiddenCount = Math.max(0, unique.length - MAX_SPECS);
 
+  const handleMouseEnter = () => {
+    gsap.to(cardRef.current, {
+      y: -3,
+      boxShadow: '0 8px 28px rgba(91,79,207,0.22)',
+      duration: 0.22,
+      ease: 'power2.out',
+    });
+  };
+
+  const handleMouseLeave = () => {
+    gsap.to(cardRef.current, {
+      y: 0,
+      boxShadow: '0 2px 12px rgba(91,79,207,0.08)',
+      duration: 0.22,
+      ease: 'power2.out',
+    });
+  };
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleFavorite();
+    gsap.fromTo(
+      heartRef.current,
+      { scale: 0.7 },
+      { scale: 1, duration: 0.35, ease: 'back.out(2.5)' }
+    );
+  };
+
   return (
     <div
+      ref={cardRef}
       className={[
         "bg-white rounded-2xl p-[14px] cursor-pointer transition-all border-[1.5px]",
         "shadow-[0_2px_12px_rgba(91,79,207,0.08)]",
-        "hover:border-[#c5bff0] hover:shadow-[0_4px_20px_rgba(91,79,207,0.15)]",
+        "hover:border-[#c5bff0]",
         isActive ? "border-[#5b4fcf]" : "border-transparent",
       ].join(" ")}
       onClick={onClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div className="flex items-start gap-3">
         <div className="shrink-0 p-[2.5px] rounded-full bg-gradient-to-br from-[#622ADA] to-[#0070BB]">
@@ -145,10 +181,8 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
       )}
 
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleFavorite();
-        }}
+        ref={heartRef}
+        onClick={handleFavoriteClick}
         className="flex items-center gap-[5px] mt-2 text-[12px] hover:opacity-80 transition-opacity"
       >
         <Heart
