@@ -130,3 +130,58 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.18);
 }
+
+/* ── Accessibility modes ── */
+
+/* High contrast */
+.a11y-high-contrast {
+  --bg-page: #0a0a0a;
+  --bg-card: #1a1a1a;
+  --text-primary: #ffffff;
+  --text-secondary: #eeeeee;
+  --text-muted: #bbbbbb;
+  --brand-accent: #ffdd00;
+  --brand-accent-light: #2a2600;
+  --brand-accent-dark: #ffee55;
+  --brand-border: #555555;
+  --border-hover: #ffdd00;
+  --shadow-card: 0 2px 12px rgba(0,0,0,0.6);
+  --shadow-card-hover: 0 4px 20px rgba(255,221,0,0.25);
+}
+.a11y-high-contrast body { background: #0a0a0a; color: #fff; }
+.a11y-high-contrast .panel-left { background: #0a0a0a; }
+.a11y-high-contrast .panel-right { background: #111; }
+.a11y-high-contrast .bg-white,
+.a11y-high-contrast [class*="bg-white"] { background: #1a1a1a !important; }
+.a11y-high-contrast .search-bar input { background: #1a1a1a; color: #fff; border-color: #555; }
+.a11y-high-contrast .text-\[\#1a1535\] { color: #fff !important; }
+.a11y-high-contrast .text-\[\#6b6690\] { color: #ccc !important; }
+.a11y-high-contrast .text-\[\#9d99c0\] { color: #aaa !important; }
+.a11y-high-contrast .border-\[\#e2dff5\] { border-color: #555 !important; }
+
+/* Large text */
+.a11y-large-text { font-size: 118%; }
+.a11y-large-text .clinics-list { font-size: 1rem; }
+
+/* Reduced motion — kills all CSS animations and GSAP will check this class */
+.a11y-reduced-motion *,
+.a11y-reduced-motion *::before,
+.a11y-reduced-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* Colorblind-friendly palette (orange replaces purple) */
+.a11y-colorblind {
+  --brand-accent: #d46b00;
+  --brand-accent-light: #fff3e0;
+  --brand-accent-dark: #a35000;
+  --brand-accent-mid: #e07c1a;
+  --border-hover: #d46b00;
+}
+.a11y-colorblind .bg-gradient-to-br,
+.a11y-colorblind [class*="from-\[\#622ADA\]"] {
+  --tw-gradient-from: #d46b00;
+  --tw-gradient-to: #0070BB;
+}

@@ -32,7 +32,12 @@ export const translations = {
     showOnMap: 'Show on map',
     chatGreeting: '👋 Hi! Describe your symptoms and I\'ll help you find the right doctor.',
     chatSubtitle: 'I will help you find the right doctor',
-    chatError: 'Connection error. Please try again.'
+    chatError: 'Connection error. Please try again.',
+    a11yTitle: 'Accessibility',
+    a11yHighContrast: 'High contrast',
+    a11yLargeText: 'Large text',
+    a11yReducedMotion: 'No animations',
+    a11yColorblind: 'Colorblind mode'
   },
   cs: {
     searchPlaceholder: 'Hledat kliniku...',
@@ -65,7 +70,12 @@ export const translations = {
     showOnMap: 'Zobrazit na mapě',
     chatGreeting: '👋 Ahoj! Popište své příznaky a já vám pomohu najít správného lékaře.',
     chatSubtitle: 'Pomůžu vám najít toho správného lékaře',
-    chatError: 'Chyba připojení. Zkuste to znovu.'
+    chatError: 'Chyba připojení. Zkuste to znovu.',
+    a11yTitle: 'Usnadnění přístupu',
+    a11yHighContrast: 'Vysoký kontrast',
+    a11yLargeText: 'Velký text',
+    a11yReducedMotion: 'Bez animací',
+    a11yColorblind: 'Režim pro barvoslepé'
   },
   ru: {
     searchPlaceholder: 'Поиск клиники...',
@@ -98,7 +108,12 @@ export const translations = {
     showOnMap: 'Показать на карте',
     chatGreeting: '👋 Привет! Опишите ваши симптомы, и я помогу найти нужного врача.',
     chatSubtitle: 'Помогу найти нужного врача',
-    chatError: 'Ошибка соединения. Попробуйте ещё раз.'
+    chatError: 'Ошибка соединения. Попробуйте ещё раз.',
+    a11yTitle: 'Специальные возможности',
+    a11yHighContrast: 'Высокий контраст',
+    a11yLargeText: 'Крупный текст',
+    a11yReducedMotion: 'Без анимаций',
+    a11yColorblind: 'Режим для дальтоников'
   },
   uk: {
     searchPlaceholder: 'Шукати клініку...',
@@ -132,6 +147,11 @@ export const translations = {
     chatGreeting: '👋 Привіт! Опишіть ваші симптоми, і я допоможу знайти потрібного лікаря.',
     chatSubtitle: 'Допоможу знайти потрібного лікаря',
     chatError: 'Помилка з\'єднання. Спробуйте ще раз.',
+    a11yTitle: 'Спеціальні можливості',
+    a11yHighContrast: 'Високий контраст',
+    a11yLargeText: 'Великий текст',
+    a11yReducedMotion: 'Без анімацій',
+    a11yColorblind: 'Режим для дальтоніків',
   },
 } satisfies Record<Lang, Record<string, string>>;
 

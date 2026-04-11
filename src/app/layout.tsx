@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { FirebaseAnalytics } from "../components/FirebaseAnalytics";
 import { LangProvider } from "../contexts/LangContext";
+import { A11yProvider } from "../contexts/A11yContext";
 import { InitialLoader } from "../components/InitialLoader";
 import "./globals.css";
 
@@ -33,7 +34,9 @@ export default function RootLayout({
       <body>
         <InitialLoader />
         <FirebaseAnalytics />
-        <LangProvider>{children}</LangProvider>
+        <A11yProvider>
+          <LangProvider>{children}</LangProvider>
+        </A11yProvider>
       </body>
     </html>
   );

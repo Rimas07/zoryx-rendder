@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Image from "next/image";
+import { A11yPanel } from '../A11yPanel/A11yPanel';
 
 const LANG_LABELS: Record<Lang, string> = { cs: 'CS', ru: 'RU', uk: 'UK', en: 'EN' };
 
@@ -101,6 +102,9 @@ export function Header({ onLogoClick }: Props) {
             className="h-8 w-auto block max-sm:h-[22px]"
           />
         </a>
+
+        {/* Accessibility */}
+        <A11yPanel />
 
         {/* Language switcher */}
         <DropdownMenu>
