@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import { FirebaseAnalytics } from "../components/FirebaseAnalytics";
 import { LangProvider } from "../contexts/LangContext";
+import { InitialLoader } from "../components/InitialLoader";
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin", "cyrillic"], display: "swap" });
 
 export const metadata: Metadata = {
   title: "Zoryx — Медицинские клиники в Праге",
   description: "Zoryx — медицинский гид по Праге",
   icons: {
-    icon: "https://gsprqyfmodotiezvopiq.supabase.co/storage/v1/object/public/fdsfds/unnamed.jpg",
+    icon: "/favicon.ico",
   },
   openGraph: {
     title: "Zoryx — Медицинские клиники в Праге",
@@ -21,8 +25,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={inter.className}>
       <body>
+        <InitialLoader />
         <FirebaseAnalytics />
         <LangProvider>{children}</LangProvider>
       </body>

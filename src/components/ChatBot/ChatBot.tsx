@@ -31,10 +31,14 @@ export function ChatBot({ specializations, clinics, onSpecializationSelect, onCl
     setLoading(true);
 
     try {
+      const history = messages
+        .filter((m) => m.role !== "bot" || m.text !== "👋 Привет! Опишите ваши симптомы, и я помогу найти нужного врача.")
+        .map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }));
+
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMsg, specializations, clinics }),
+        body: JSON.stringify({ message: userMsg, history, specializations, clinics }),
       });
       const data = await res.json();
       setMessages((prev) => [...prev, { role: "bot", text: data.answer }]);

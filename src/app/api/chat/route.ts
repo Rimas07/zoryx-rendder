@@ -1,18 +1,18 @@
 export async function POST(req: Request) {
-    const { message, specializations, clinics } = await req.json();
+    const { message, history, specializations, clinics } = await req.json();
 
     const clinicList = (clinics as { id: string; name: string; specializations: string[]; languages: string[]; address: string }[])
         .map(c => `- ${c.name} | специализации: ${c.specializations.join(', ')} | языки: ${c.languages.join(', ')} | адрес: ${c.address}`)
         .join('\n');
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            model: 'google/gemini-2.0-flash-001',
+            model: 'gpt-4o-mini',
             messages: [
                 {
                     role: 'system',
@@ -28,6 +28,7 @@ ${clinicList}
 **Рекомендуемая специализация: [название из списка]**
 **Рекомендуемая клиника: [точное название клиники из списка]**`
                 },
+                ...(history || []),
                 { role: 'user', content: message }
             ],
             max_tokens: 500,

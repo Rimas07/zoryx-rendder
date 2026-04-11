@@ -8,17 +8,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import Image from "next/image";
 
 const LANG_LABELS: Record<Lang, string> = { cs: 'CS', ru: 'RU', uk: 'UK', en: 'EN' };
 
 interface Props {
   onLogoClick: () => void;
-  mapVisible: boolean;
-  onMapToggle: () => void;
 }
 
-export function Header({ onLogoClick, mapVisible, onMapToggle }: Props) {
-  const { lang, setLang, t } = useLang();
+export function Header({ onLogoClick }: Props) {
+  const { lang, setLang } = useLang();
 
   return (
     <header className="bg-gradient-to-r from-[#622ADA] to-[#0070BB] h-[60px] px-5 flex items-center justify-between gap-4 z-[200] shrink-0 max-sm:px-3 max-sm:gap-2">
@@ -27,30 +26,19 @@ export function Header({ onLogoClick, mapVisible, onMapToggle }: Props) {
         className="flex items-center gap-2 shrink-0 cursor-pointer"
         onClick={onLogoClick}
       >
-        <img
-          src="https://gsprqyfmodotiezvopiq.supabase.co/storage/v1/object/public/fdsfds/ZORYX%20LOGO%20.png"
+        <Image
+          src="/zoryx-logo.png"
           alt="Zoryx Logo"
+          width={120}
+          height={42}
           className="h-[42px] w-auto max-sm:h-8"
+          priority
         />
         <span className="text-[22px] font-bold text-white tracking-[-0.3px] max-sm:text-[18px]">
           Zoryx
         </span>
       </div>
 
-      {/* Center — Show on map */}
-      <div
-        className="flex items-center gap-3 text-white text-[14px] font-medium select-none max-sm:hidden cursor-pointer"
-        onClick={onMapToggle}
-      >
-        <span>{t("showOnMap")}</span>
-        <div className="w-11 h-6 rounded-full bg-white/20 flex items-center px-1">
-          <div
-            className={`w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${
-              mapVisible ? "translate-x-5" : ""
-            }`}
-          />
-        </div>
-      </div>
       {/* Right — Store badges + Language */}
       <div className="flex items-center gap-3 max-sm:gap-1.5">
         <a
