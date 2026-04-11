@@ -30,6 +30,9 @@ export const translations = {
     allClinics: 'All clinics',
     onlyFavorites: 'Favorites only',
     showOnMap: 'Show on map',
+    chatGreeting: '👋 Hi! Describe your symptoms and I\'ll help you find the right doctor.',
+    chatSubtitle: 'I will help you find the right doctor',
+    chatError: 'Connection error. Please try again.'
   },
   cs: {
     searchPlaceholder: 'Hledat kliniku...',
@@ -60,6 +63,9 @@ export const translations = {
     allClinics: 'Všechny kliniky',
     onlyFavorites: 'Jen oblíbené',
     showOnMap: 'Zobrazit na mapě',
+    chatGreeting: '👋 Ahoj! Popište své příznaky a já vám pomohu najít správného lékaře.',
+    chatSubtitle: 'Pomůžu vám najít toho správného lékaře',
+    chatError: 'Chyba připojení. Zkuste to znovu.'
   },
   ru: {
     searchPlaceholder: 'Поиск клиники...',
@@ -90,6 +96,9 @@ export const translations = {
     allClinics: 'Все клиники',
     onlyFavorites: 'Только избранные',
     showOnMap: 'Показать на карте',
+    chatGreeting: '👋 Привет! Опишите ваши симптомы, и я помогу найти нужного врача.',
+    chatSubtitle: 'Помогу найти нужного врача',
+    chatError: 'Ошибка соединения. Попробуйте ещё раз.'
   },
   uk: {
     searchPlaceholder: 'Шукати клініку...',
@@ -120,6 +129,9 @@ export const translations = {
     allClinics: 'Всі клініки',
     onlyFavorites: 'Лише обрані',
     showOnMap: 'Показати на карті',
+    chatGreeting: '👋 Привіт! Опишіть ваші симптоми, і я допоможу знайти потрібного лікаря.',
+    chatSubtitle: 'Допоможу знайти потрібного лікаря',
+    chatError: 'Помилка з\'єднання. Спробуйте ще раз.',
   },
 } satisfies Record<Lang, Record<string, string>>;
 
