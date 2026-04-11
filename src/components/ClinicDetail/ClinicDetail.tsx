@@ -60,6 +60,16 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
       >
         {/* ── FRONT — инфо ── */}
         <div style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" } as React.CSSProperties} className="w-full p-7">
+          {/* Back to list — mobile only */}
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="flex items-center gap-1.5 text-[#5b4fcf] text-[13px] font-medium mb-3 hover:opacity-75 transition-opacity md:hidden"
+            >
+              <ArrowBigLeft size={18} />
+              {t("allClinics")}
+            </button>
+          )}
           {/* HERO */}
           <div className="relative rounded-[20px] bg-gradient-to-br from-[rgba(110,95,210,0.18)] to-[rgba(70,130,220,0.15)] px-5 pt-6 pb-5 mb-[14px] flex flex-col items-center gap-3 text-center">
             <Button
@@ -85,6 +95,8 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
               <img
                 src="https://gsprqyfmodotiezvopiq.supabase.co/storage/v1/object/public/fdsfds/Web%20Zoryx%20partner.png"
                 alt="Zoryx Partner"
+                width={112}
+                height={28}
                 className="h-[28px] w-auto"
               />
             )}
@@ -209,7 +221,7 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
                 <Label>{t("email")}</Label>
                 <a
                   href={`mailto:${clinic.email}`}
-                  className="text-[13px] text-[#5b4fcf] leading-[1.8]"
+                  className="text-[13px] text-[#5b4fcf] leading-[1.8] break-all"
                 >
                   {clinic.email}
                 </a>
@@ -223,7 +235,7 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
                 <Value>{clinic.address}</Value>
               </InfoRow>
             )}
-            {clinic.website && (
+            {clinic.website && /^https?:\/\//.test(clinic.website) && (
               <InfoRow
                 icon={<Globe size={20} strokeWidth={1.8} color="#5b4fcf" />}
                 last
@@ -232,8 +244,8 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
                 <a
                   href={clinic.website}
                   target="_blank"
-                  rel="noreferrer"
-                  className="text-[13px] text-[#5b4fcf] leading-[1.8]"
+                  rel="noreferrer noopener"
+                  className="text-[13px] text-[#5b4fcf] leading-[1.8] break-all"
                 >
                   {clinic.website}
                 </a>
@@ -269,24 +281,18 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
             right: 0,
             bottom: 0,
           } as React.CSSProperties}
-          className="w-full h-full flex flex-col"
+          className="w-full h-full"
         >
-          <div className="flex items-center gap-2 px-6 py-4">
+          <div className="relative w-full h-full" style={{ minHeight: 400 }}>
+            {mapOpen && <MapView clinic={clinic} />}
+            {/* Floating back button */}
             <button
               onClick={() => setMapOpen(false)}
-              className="flex items-center gap-2 text-[#5b4fcf] text-[13px] font-medium hover:opacity-75 transition-opacity"
+              className="absolute top-4 left-4 z-[1000] flex items-center gap-1.5 bg-white text-[#5b4fcf] text-[13px] font-semibold px-3 py-2 rounded-full shadow-[0_2px_12px_rgba(0,0,0,0.2)] hover:opacity-85 transition-opacity"
             >
-              <ArrowBigLeft size={20} />
+              <ArrowBigLeft size={18} />
               {t("aboutClinic")}
             </button>
-          </div>
-          <div className="flex-1 px-4 pb-4">
-            <div
-              className="rounded-2xl overflow-hidden w-full h-full shadow-[0_2px_12px_rgba(91,79,207,0.08)]"
-              style={{ minHeight: 400 }}
-            >
-              {mapOpen && <MapView clinic={clinic} />}
-            </div>
           </div>
         </div>
       </div>

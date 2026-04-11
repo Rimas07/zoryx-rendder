@@ -46,7 +46,8 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
             alt={clinic.name}
             width={52}
             height={52}
-            className="rounded-full object-cover block bg-[#ede9ff]"
+            className="rounded-full object-cover block"
+            style={{ background: 'linear-gradient(135deg, #ede9ff 0%, #dceeff 100%)' }}
           />
         </div>
         <div className="flex-1 min-w-0">
@@ -57,6 +58,8 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
             <img
               src="https://gsprqyfmodotiezvopiq.supabase.co/storage/v1/object/public/fdsfds/Web%20Zoryx%20partner.png"
               alt="Zoryx Partner"
+              width={104}
+              height={26}
               className="h-[26px] w-auto mb-1"
             />
           )}

@@ -1,28 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MessageCircle, X, Send } from "lucide-react";
-
+import { useLang } from "../../contexts/LangContext";
 interface Props {
+
   specializations: string[];
   clinics: { id: string; name: string; specializations: string[]; languages: string[]; address: string }[];
   onSpecializationSelect?: (spec: string) => void;
   onClinicSelect?: (id: string) => void;
+  
 }
 
 export function ChatBot({ specializations, clinics, onSpecializationSelect, onClinicSelect }: Props) {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<
-    { role: "user" | "bot"; text: string }[]
-  >([
-    {
-      role: "bot",
-      text: "👋 Привет! Опишите ваши симптомы, и я помогу найти нужного врача.",
-    },
-  ]);
+    const { t, lang } = useLang();
+   
+  const [messages, setMessages] = useState<{ role: "user" | "bot"; text: string }[]>(() => {
+    try {
+      const saved = sessionStorage.getItem("zoryx_chat");
+      return saved ? JSON.parse(saved) : [{ role: "bot", text: t("chatGreeting") }];
+    } catch {
+      return [{ role: "bot", text: t("chatGreeting") }];
+    }
+  });
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Сохраняем историю при каждом изменении
+  useEffect(() => {
+    sessionStorage.setItem("zoryx_chat", JSON.stringify(messages));
+  }, [messages]);
+
+  // При смене языка всегда сбрасываем чат
+  useEffect(() => {
+    setMessages([{ role: "bot", text: t("chatGreeting") }]);
+    sessionStorage.removeItem("zoryx_chat");
+  }, [lang]);
   const send = async () => {
     if (!input.trim() || loading) return;
     const userMsg = input.trim();
@@ -32,16 +46,28 @@ export function ChatBot({ specializations, clinics, onSpecializationSelect, onCl
 
     try {
       const history = messages
-        .filter((m) => m.role !== "bot" || m.text !== "👋 Привет! Опишите ваши симптомы, и я помогу найти нужного врача.")
-        .map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }));
+        .filter((m) => m.role !== "bot" || m.text !== t("chatGreeting"))
+        .map((m) => ({
+          role: m.role === "user" ? "user" : "assistant",
+          content: m.text,
+        }));
 
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMsg, history, specializations, clinics }),
+       body: JSON.stringify({ message: userMsg, history, lang }),
       });
       const data = await res.json();
-      setMessages((prev) => [...prev, { role: "bot", text: data.answer }]);
+      if (!res.ok || data.error) {
+        setMessages((prev) => [...prev, { role: "bot", text: t("chatError") }]);
+        setLoading(false);
+        return;
+      }
+      const cleanAnswer = data.answer
+        .replace(/\*?\*?Рекомендуемая специализация:[^\n]*/g, '')
+        .replace(/\*?\*?Рекомендуемая клиника:[^\n]*/g, '')
+        .trim();
+      setMessages((prev) => [...prev, { role: "bot", text: cleanAnswer }]);
 
       // Применяем специализацию
       const specMatch = data.answer.match(
@@ -69,7 +95,7 @@ export function ChatBot({ specializations, clinics, onSpecializationSelect, onCl
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "bot", text: "Ошибка соединения. Попробуйте ещё раз." },
+        { role: "bot", text: t("chatError") },
       ]);
     }
     setLoading(false);
@@ -93,7 +119,7 @@ export function ChatBot({ specializations, clinics, onSpecializationSelect, onCl
             <div>
               <div className="text-white font-semibold text-sm">Zoryx AI</div>
               <div className="text-white/70 text-xs">
-                Помогу найти нужного врача
+                {t("chatSubtitle")}
               </div>
             </div>
             <button
