@@ -66,10 +66,12 @@ export function MapView({ clinic }: Props) {
       });
 
       mapRef.current = L.map(containerRef.current, {
-        zoomControl: true,
+        zoomControl: false,
         center: [lat, lon],
         zoom: 15,
       });
+
+      L.control.zoom({ position: 'topright' }).addTo(mapRef.current);
 
       L.tileLayer(
         "https://tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token={accessToken}",

@@ -53,9 +53,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* ── Panels ── */
 .panel-left { display: flex; flex-direction: column; overflow: hidden; background: var(--bg-page); }
-.panel-right { background: linear-gradient(145deg, #e9e5fa 0%, #dceeff 100%); overflow-y: auto; display: flex; align-items: flex-start; justify-content: center; }
-.panel-right::-webkit-scrollbar { width: 4px; }
-.panel-right::-webkit-scrollbar-thumb { background: var(--brand-border); border-radius: 4px; }
+.panel-right { background: linear-gradient(145deg, #e9e5fa 0%, #dceeff 100%); overflow: hidden; display: flex; align-items: stretch; justify-content: center; }
 
 /* ── Search & filters ── */
 .search-area { padding: 14px 14px 0; flex-shrink: 0; }

@@ -39,6 +39,21 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
   const flagsRef = useRef<HTMLDivElement>(null);
   const specsRef = useRef<HTMLDivElement>(null);
   const bookBtnRef = useRef<HTMLDivElement>(null);
+  const frontPanelRef = useRef<HTMLDivElement>(null);
+  const backPanelRef = useRef<HTMLDivElement>(null);
+
+  // Slide animation between info and map
+  useEffect(() => {
+    const ease = 'power2.inOut';
+    const duration = 0.45;
+    if (mapOpen) {
+      gsap.to(frontPanelRef.current, { x: '-100%', duration, ease });
+      gsap.to(backPanelRef.current,  { x: '0%',    duration, ease });
+    } else {
+      gsap.to(frontPanelRef.current, { x: '0%',    duration, ease });
+      gsap.to(backPanelRef.current,  { x: '100%',  duration, ease });
+    }
+  }, [mapOpen]);
 
   // Blocks appear in sequence
   useEffect(() => {
@@ -112,13 +127,8 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
 
       {/* ── FRONT — инфо ── */}
       <div
-        style={{
-          transition: "transform 0.45s cubic-bezier(0.4,0,0.2,1)",
-          transform: mapOpen ? "translateX(-100%)" : "translateX(0)",
-          position: "absolute",
-          inset: 0,
-          overflowY: "auto",
-        }}
+        ref={frontPanelRef}
+        style={{ position: "absolute", inset: 0, overflowY: "auto" }}
       >
         <div className="w-full p-7" ref={contentRef}>
           {/* Back to list — mobile only */}
@@ -267,12 +277,8 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
 
       {/* ── BACK — карта ── */}
       <div
-        style={{
-          transition: "transform 0.45s cubic-bezier(0.4,0,0.2,1)",
-          transform: mapOpen ? "translateX(0)" : "translateX(100%)",
-          position: "absolute",
-          inset: 0,
-        }}
+        ref={backPanelRef}
+        style={{ position: "absolute", inset: 0, transform: "translateX(100%)" }}
       >
         <div className="relative w-full h-full" style={{ minHeight: 400 }}>
           {mapOpen && <MapView clinic={clinic} />}
