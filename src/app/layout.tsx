@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import { LangProvider } from "../contexts/LangContext";
 import { A11yProvider } from "../contexts/A11yContext";
 import { InitialLoader } from "../components/InitialLoader";
-import Script from "next/script";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"], display: "swap" });
