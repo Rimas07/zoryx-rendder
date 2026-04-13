@@ -57,12 +57,20 @@ export function ClinicsLayout({
   const [pendingSpecs, setPendingSpecs] = useState<string[]>([]);
   const [activeSpecs, setActiveSpecs] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('zoryx_favorites');
+      if (saved) setFavorites(new Set(JSON.parse(saved)));
+    } catch {}
+  }, []);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   const toggleFavorite = (id: string) =>
     setFavorites((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
+      localStorage.setItem('zoryx_favorites', JSON.stringify([...next]));
       return next;
     });
 
@@ -108,13 +116,16 @@ export function ClinicsLayout({
 
   // Анимация при смене фильтра/поиска — все карточки
   useEffect(() => {
-    if (!listRef.current) return;
-    const cards = listRef.current.querySelectorAll(':scope > div');
-    if (cards.length === 0) return;
-    gsap.fromTo(cards,
-      { opacity: 0, y: 24 },
-      { opacity: 1, y: 0, duration: 0.35, stagger: 0.05, ease: "power2.out", clearProps: "all" }
-    );
+    const id = requestAnimationFrame(() => {
+      if (!listRef.current) return;
+      const cards = listRef.current.querySelectorAll(':scope > div');
+      if (cards.length === 0) return;
+      gsap.fromTo(cards,
+        { opacity: 0, y: 24 },
+        { opacity: 1, y: 0, duration: 0.35, stagger: 0.05, ease: "power2.out", clearProps: "all" }
+      );
+    });
+    return () => cancelAnimationFrame(id);
   }, [displayed.length]);
 
   // Анимация при подгрузке следующей порции — только новые карточки
@@ -320,6 +331,8 @@ export function ClinicsLayout({
               key={selectedClinic.id}
               clinic={selectedClinic}
               initialMapOpen={openWithMap}
+              isFavorite={favorites.has(selectedClinic.id)}
+              onToggleFavorite={() => toggleFavorite(selectedClinic.id)}
               onBack={() => {
                 setSelectedClinic(null);
                 window.history.pushState(null, '', '/');

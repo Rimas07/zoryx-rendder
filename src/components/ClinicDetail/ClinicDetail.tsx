@@ -28,9 +28,11 @@ interface Props {
   clinic: Clinic;
   onBack?: () => void;
   initialMapOpen?: boolean;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
-export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) {
+export function ClinicDetail({ clinic, onBack, initialMapOpen = false, isFavorite = false, onToggleFavorite }: Props) {
   const { t, lang, tSpec } = useLang();
   const infoHtml = getClinicInfo(clinic, lang);
   const [mapOpen, setMapOpen] = useState(initialMapOpen);
@@ -131,8 +133,8 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
 
           {/* HERO */}
           <div className="relative rounded-[20px] bg-gradient-to-br from-[rgba(110,95,210,0.18)] to-[rgba(70,130,220,0.15)] px-5 pt-6 pb-5 mb-[14px] flex flex-col items-center gap-3 text-center">
-            <Button variant="ghost" size="icon" className="absolute top-3 right-3 rounded-full bg-white/80 hover:bg-white/90">
-              <Heart size={40} className="text-[#5b4fcf] fill-[#5b4fcf]" />
+            <Button variant="ghost" size="icon" onClick={onToggleFavorite} className="absolute top-3 right-3 rounded-full bg-white/80 hover:bg-white/90">
+              <Heart size={40} className={isFavorite ? "text-[#5b4fcf] fill-[#5b4fcf]" : "text-[#9d99c0]"} />
             </Button>
             <div className="w-[120px] h-[120px] rounded-full bg-gradient-to-br from-[#622ADA] to-[#0070BB] p-[3px] shadow-[0_6px_20px_rgba(91,79,207,0.25)]">
               <Image

@@ -33,9 +33,10 @@ export function FilterPanel({
 }: Props) {
   const { t, tSpec } = useLang();
   const [search, setSearch] = useState("");
-  const filtered = specs.filter((s) =>
-    s.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = specs.filter((s) => {
+    const q = search.toLowerCase();
+    return s.toLowerCase().includes(q) || tSpec(s).toLowerCase().includes(q);
+  });
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -71,14 +72,14 @@ export function FilterPanel({
                   "inline-flex items-center px-[14px] py-[6px] rounded-full text-[12px] font-medium border-[1.5px] transition-colors cursor-pointer font-[inherit]",
                   isActive
                     ? "bg-[#5b4fcf] border-[#5b4fcf] text-white"
-                    : "bg-transparent border-[#e2dff5] text-[#6b6690] hover:border-[#5b4fcf] hover:text-[#5b4fcf]",
+                    : "bg-[#f0f0f0] border-[#f0f0f0] text-[#6b6690] hover:border-[#5b4fcf] hover:text-[#5b4fcf] hover:bg-[#f0eef8]",
                 ].join(" ")}
               >
                 {tSpec(s)}
                 {specCounts?.[s] !== undefined && (
                   <span className={[
                     "ml-1.5 text-[11px] rounded-full px-1.5",
-                    isActive ? "bg-white/25 text-white" : "bg-[#e2dff5] text-[#6b6690]",
+                    isActive ? "bg-[#4a3fb8] text-white" : "bg-[#e0e0e0] text-[#6b6690]",
                   ].join(" ")}>
                     {specCounts[s]}
                   </span>

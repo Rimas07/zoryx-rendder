@@ -20,12 +20,6 @@ export async function POST(req: Request) {
         return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Блокируем ботов
-    const ua = req.headers.get('user-agent') || '';
-    if (/bot|crawl|spider|google|bing|yahoo|baidu|yandex/i.test(ua)) {
-        return Response.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     // Rate limiting: максимум 20 запросов в минуту с одного IP
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown';
     const now = Date.now();
@@ -117,7 +111,7 @@ ${clinicList}
                 ...safeHistory,
                 { role: 'user', content: cleanMessage }
             ],
-            max_tokens: 500,
+            max_tokens: 800,
         }),
     });
     } catch {
