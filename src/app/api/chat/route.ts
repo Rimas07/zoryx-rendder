@@ -10,12 +10,19 @@ const ALLOWED_ORIGINS = [
 const rateLimit = new Map<string, { count: number; reset: number }>();
 
 
-let clinicsCache: { data: Awaited<ReturnType<typeof import('../../../lib/firebase').getClinics>>; specs: string[]; ts: number } | null = null;
+// Кэшируем только строки — не полные объекты клиник
+let clinicsCache: { clinicList: string; specs: string[]; ts: number } | null = null;
 const CACHE_TTL = 10 * 60 * 1000;
 
 export async function POST(req: Request) {
     const origin = req.headers.get('origin') || '';
     if (!ALLOWED_ORIGINS.includes(origin)) {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Блокируем ботов
+    const ua = req.headers.get('user-agent') || '';
+    if (/bot|crawl|spider|google|bing|yahoo|baidu|yandex/i.test(ua)) {
         return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -33,14 +40,18 @@ export async function POST(req: Request) {
 
     const { message, history, lang } = await req.json();
 
-    // Загружаем клиники с кэшем — не дёргаем Firebase на каждый запрос
+    // Загружаем клиники с кэшем — кэшируем строки, не объекты
     const now2 = Date.now();
     if (!clinicsCache || now2 - clinicsCache.ts > CACHE_TTL) {
         const clinicsData = await getClinics();
         const specsData = await getSpecializations(clinicsData);
-        clinicsCache = { data: clinicsData, specs: specsData, ts: now2 };
+        const clinicListStr = clinicsData
+            .map(c => `- ${c.name} | специализации: ${c.specializations.join(', ')} | языки: ${c.languages.join(', ')} | адрес: ${c.address}`)
+            .join('\n');
+        clinicsCache = { clinicList: clinicListStr, specs: specsData, ts: now2 };
+        // clinicsData выходит из scope и будет GC'd
     }
-    const clinics = clinicsCache.data;
+    const clinicList = clinicsCache.clinicList;
     const specializations = clinicsCache.specs;
 
     // Валидация истории — только user/assistant, не system, не длиннее 1000 символов
@@ -67,10 +78,6 @@ export async function POST(req: Request) {
     if (!cleanMessage) {
         return Response.json({ error: 'Empty message' }, { status: 400 });
     }
-
-    const clinicList = clinics
-        .map(c => `- ${c.name} | специализации: ${c.specializations.join(', ')} | языки: ${c.languages.join(', ')} | адрес: ${c.address}`)
-        .join('\n');
 
     const langNames: Record<string, string> = {
         ru: 'русском', uk: 'украинском', cs: 'чешском', en: 'английском',
