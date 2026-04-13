@@ -66,19 +66,6 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
     );
   }, [clinic.id]);
 
-  // Partner badge pulse
-  useEffect(() => {
-    if (!partnerRef.current || !clinic.isPartner) return;
-    const tween = gsap.to(partnerRef.current, {
-      filter: 'drop-shadow(0 0 6px rgba(98,42,218,0.7)) drop-shadow(0 0 12px rgba(0,112,187,0.5))',
-      scale: 1.06,
-      duration: 1.1,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut',
-    });
-    return () => { tween.kill(); };
-  }, [clinic.id, clinic.isPartner]);
 
   // Flags pop in with stagger
   useEffect(() => {
@@ -116,10 +103,10 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
   }, [clinic.id, clinic.altegioCompanyId]);
 
   const flags: Record<string, string> = {
-    cs: 'https://flagcdn.com/w40/cz.png',
-    ru: 'https://flagcdn.com/w40/ru.png',
-    uk: 'https://flagcdn.com/w40/ua.png',
-    en: 'https://flagcdn.com/w40/gb.png',
+    cs: 'https://flagcdn.com/cz.svg',
+    ru: 'https://flagcdn.com/ru.svg',
+    uk: 'https://flagcdn.com/ua.svg',
+    en: 'https://flagcdn.com/gb.svg',
   };
 
   return (
@@ -198,8 +185,8 @@ export function ClinicDetail({ clinic, onBack, initialMapOpen = false }: Props) 
                   {clinic.languages.map((l) => {
                     const code = l.toLowerCase();
                     return flags[code] ? (
-                      <div key={l} title={l} className="relative rounded-full overflow-hidden shrink-0" style={{ width: 35, height: 35 }}>
-                        <Image src={flags[code]} alt={l} fill style={{ objectFit: 'cover' }} sizes="28px" />
+                      <div key={l} title={l} className="rounded-full overflow-hidden shrink-0 shadow-sm" style={{ width: 35, height: 35 }}>
+                        <img src={flags[code]} alt={l} width={35} height={35} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                       </div>
                     ) : null;
                   })}

@@ -9,6 +9,10 @@ const ALLOWED_ORIGINS = [
 // Живёт между запросами — не внутри функции
 const rateLimit = new Map<string, { count: number; reset: number }>();
 
+
+let clinicsCache: { data: Awaited<ReturnType<typeof import('../../../lib/firebase').getClinics>>; specs: string[]; ts: number } | null = null;
+const CACHE_TTL = 10 * 60 * 1000;
+
 export async function POST(req: Request) {
     const origin = req.headers.get('origin') || '';
     if (!ALLOWED_ORIGINS.includes(origin)) {
@@ -29,13 +33,19 @@ export async function POST(req: Request) {
 
     const { message, history, lang } = await req.json();
 
-    // Загружаем клиники на сервере — клиент не может их подменить
-    const clinics = await getClinics();
-    const specializations = await getSpecializations(clinics);
+    // Загружаем клиники с кэшем — не дёргаем Firebase на каждый запрос
+    const now2 = Date.now();
+    if (!clinicsCache || now2 - clinicsCache.ts > CACHE_TTL) {
+        const clinicsData = await getClinics();
+        const specsData = await getSpecializations(clinicsData);
+        clinicsCache = { data: clinicsData, specs: specsData, ts: now2 };
+    }
+    const clinics = clinicsCache.data;
+    const specializations = clinicsCache.specs;
 
     // Валидация истории — только user/assistant, не system, не длиннее 1000 символов
     const safeHistory = ((history || []) as unknown[])
-        .slice(-6) // последние 6 сообщений (3 пары вопрос-ответ)
+        .slice(-12) // последние 12 сообщений (6 пар вопрос-ответ)
         .filter((m): m is { role: string; content: string } => {
             if (typeof m !== 'object' || m === null) return false;
             const msg = m as Record<string, unknown>;
@@ -90,8 +100,9 @@ export async function POST(req: Request) {
 ${clinicList}
 
 Пользователь может описывать симптомы, просить врача говорящего на определённом языке (русский=ru, украинский=uk, чешский=cs, английский=en), или упоминать район Праги (Praha 1, Praha 7 и т.д.).
-Подбери подходящую клинику из списка с учётом всех критериев пользователя.
+Подбери подходящую клинику из списка с учётом ВСЕХ критериев пользователя из всей истории разговора (симптомы, язык, район).
 Если запрашиваемая специализация отсутствует в списке — предложи ближайшую подходящую.
+Если пользователь уточняет или задаёт follow-up вопрос — учитывай контекст предыдущих сообщений и НЕ меняй рекомендацию без новой причины.
 Веди разговор ТОЛЬКО на ${langName} языке. Последние две строки с рекомендациями ВСЕГДА пиши на русском языке точно в этом формате:
 **Рекомендуемая специализация: [название из списка]**
 **Рекомендуемая клиника: [точное название клиники из списка]**`

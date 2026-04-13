@@ -32,7 +32,7 @@ const nextConfig = {
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: blob: https://flagcdn.com https://firebasestorage.googleapis.com https://storage.googleapis.com https://gsprqyfmodotiezvopiq.supabase.co https://tile.jawg.io https://developer.apple.com https://upload.wikimedia.org",
-            "connect-src 'self' https://firestore.googleapis.com https://firebase.googleapis.com https://identitytoolkit.googleapis.com https://api.openai.com https://api.mapy.cz https://tile.jawg.io https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com",
+            "connect-src 'self' https://firestore.googleapis.com https://firebase.googleapis.com https://identitytoolkit.googleapis.com https://api.openai.com https://api.mapy.cz https://tile.jawg.io https://*.google-analytics.com https://*.analytics.google.com https://www.google.com",
             "frame-ancestors 'none'",
           ].join('; ') },
         ],
