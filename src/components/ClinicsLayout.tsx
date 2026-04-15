@@ -168,6 +168,17 @@ export function ClinicsLayout({
     return () => observer.disconnect();
   }, []);
 
+  // Слушаем кнопку "назад" в браузере
+  useEffect(() => {
+    const handlePopState = () => {
+      if (!window.location.pathname.startsWith('/clinic/')) {
+        setSelectedClinic(null);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const openClinic = (clinic: Clinic, withMap = false) => {
     setOpenWithMap(withMap);
     setSelectedClinic(clinic);
@@ -316,11 +327,11 @@ export function ClinicsLayout({
                 onMapClick={() => openClinic(clinic, true)}
               />
             ))}
-            {visibleCount < displayed.length && (
-              <div ref={loaderRef} className="py-4 text-center text-[13px] text-[#9d99c0]">
-                Загрузка...
-              </div>
-            )}
+            <div ref={loaderRef} className="py-2">
+              {visibleCount < displayed.length && (
+                <p className="text-center text-[13px] text-[#9d99c0]">{t("loading")}</p>
+              )}
+            </div>
           </div>
         </div>
 
@@ -345,7 +356,7 @@ export function ClinicsLayout({
       </div>
       <ChatBot
         specializations={allSpecs}
-        clinics={clinics.map((c) => ({
+        clinics={initialClinics.map((c) => ({
           id: c.id,
           name: c.name,
           specializations: c.specializations,
@@ -353,7 +364,7 @@ export function ClinicsLayout({
           address: c.address,
         }))}
         onSpecializationSelect={(spec) => {
-          setActiveSpecs([spec]);
+          setActiveSpecs((prev) => prev.includes(spec) ? prev : [...prev, spec]);
         }}
         onClinicSelect={(id) => {
           const clinic = clinics.find((c) => c.id === id);

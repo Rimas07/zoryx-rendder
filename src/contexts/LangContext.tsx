@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { translations, translateSpec } from '../i18n';
 import type { Lang, TKey } from '../i18n';
@@ -16,6 +16,12 @@ const LangContext = createContext<LangContextValue | null>(null);
 
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>('ru');
+
+  // Обновляем html lang при смене языка — важно для скринридеров и SEO
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
+
   const t = (key: TKey) => translations[lang][key];
   const tSpec = (spec: string) => translateSpec(spec, lang);
   return (

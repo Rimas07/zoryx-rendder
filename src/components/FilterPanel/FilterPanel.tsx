@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { useLang } from "../../contexts/LangContext";
+import { specTranslations } from "../../i18n";
 import {
   Dialog,
   DialogContent,
@@ -35,7 +36,12 @@ export function FilterPanel({
   const [search, setSearch] = useState("");
   const filtered = specs.filter((s) => {
     const q = search.toLowerCase();
-    return s.toLowerCase().includes(q) || tSpec(s).toLowerCase().includes(q);
+    if (s.toLowerCase().includes(q)) return true;
+    const allTranslations = specTranslations[s];
+    if (allTranslations) {
+      return Object.values(allTranslations).some((tr) => tr?.toLowerCase().includes(q));
+    }
+    return false;
   });
 
   return (
@@ -49,7 +55,7 @@ export function FilterPanel({
         <div className="relative px-0 pb-2">
           <input
             type="text"
-            placeholder="поиск специализации..."
+            placeholder={t("searchSpec")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-[#f0eef8] border-[1.5px] border-[#e2dff5] text-[#1a1535] placeholder-[#9d99c0] py-2 pl-3 pr-9 rounded-xl text-[13px] outline-none focus:border-[#5b4fcf] transition-colors"

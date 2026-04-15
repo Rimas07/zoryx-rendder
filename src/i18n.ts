@@ -37,7 +37,11 @@ export const translations = {
     a11yHighContrast: 'High contrast',
     a11yLargeText: 'Large text',
     a11yReducedMotion: 'No animations',
-    a11yColorblind: 'Colorblind mode'
+    a11yColorblind: 'Colorblind mode',
+    searchSpec: 'Search specialization...',
+    chatThinking: 'Thinking...',
+    chatInputPlaceholder: 'Describe your symptoms...',
+    collapse: 'collapse'
   },
   cs: {
     searchPlaceholder: 'Hledat kliniku...',
@@ -75,7 +79,11 @@ export const translations = {
     a11yHighContrast: 'Vysoký kontrast',
     a11yLargeText: 'Velký text',
     a11yReducedMotion: 'Bez animací',
-    a11yColorblind: 'Režim pro barvoslepé'
+    a11yColorblind: 'Režim pro barvoslepé',
+    searchSpec: 'Hledat specializaci...',
+    chatThinking: 'Přemýšlím...',
+    chatInputPlaceholder: 'Popište své příznaky...',
+    collapse: 'sbalit'
   },
   ru: {
     searchPlaceholder: 'Поиск клиники...',
@@ -113,7 +121,11 @@ export const translations = {
     a11yHighContrast: 'Высокий контраст',
     a11yLargeText: 'Крупный текст',
     a11yReducedMotion: 'Без анимаций',
-    a11yColorblind: 'Режим для дальтоников'
+    a11yColorblind: 'Режим для дальтоников',
+    searchSpec: 'Поиск специализации...',
+    chatThinking: 'Думаю...',
+    chatInputPlaceholder: 'Опишите симптомы...',
+    collapse: 'свернуть'
   },
   uk: {
     searchPlaceholder: 'Шукати клініку...',
@@ -152,6 +164,10 @@ export const translations = {
     a11yLargeText: 'Великий текст',
     a11yReducedMotion: 'Без анімацій',
     a11yColorblind: 'Режим для дальтоніків',
+    searchSpec: 'Пошук спеціалізації...',
+    chatThinking: 'Думаю...',
+    chatInputPlaceholder: 'Опишіть симптоми...',
+    collapse: 'згорнути'
   },
 } satisfies Record<Lang, Record<string, string>>;
 

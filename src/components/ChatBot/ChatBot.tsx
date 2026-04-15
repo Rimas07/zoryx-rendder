@@ -180,7 +180,7 @@ export function ChatBot({ specializations, clinics, onSpecializationSelect, onCl
             {loading && (
               <div className="flex justify-start">
                 <div className="bg-[#f0eef8] px-3 py-2 rounded-2xl rounded-bl-sm text-[13px] text-[#9d99c0]">
-                  Думаю...
+                  {t("chatThinking")}
                 </div>
               </div>
             )}
@@ -192,7 +192,7 @@ export function ChatBot({ specializations, clinics, onSpecializationSelect, onCl
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder="Опишите симптомы..."
+              placeholder={t("chatInputPlaceholder")}
               className="flex-1 text-[13px] bg-[#f0eef8] rounded-xl px-3 py-2 outline-none border border-transparent focus:border-[#622ADA]"
             />
             <button

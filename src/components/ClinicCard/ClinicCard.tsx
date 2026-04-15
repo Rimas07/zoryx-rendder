@@ -20,7 +20,7 @@ interface Props {
 }
 
 export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggleFavorite, onClick, onMapClick }: Props) {
-  const { tSpec } = useLang();
+  const { t, tSpec } = useLang();
   const [expanded, setExpanded] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const heartRef = useRef<HTMLButtonElement>(null);
@@ -162,7 +162,7 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
                 e.stopPropagation();
                 setExpanded(true);
               }}
-              className="text-[11px] text-[#9d99c0] hover:text-[#5b4fcf] transition-colors flex items-center gap-0.5"
+              className="px-[10px] py-[3px] rounded-full text-[11px] font-medium border-[1.5px] border-[#c5bff0] text-[#5b4fcf] bg-[#f0eef8] hover:bg-[#ede9ff] hover:border-[#5b4fcf] transition-colors flex items-center gap-0.5"
             >
               +{hiddenCount} <ChevronDown size={12} />
             </button>
@@ -175,7 +175,7 @@ export function ClinicCard({ clinic, isActive, activeSpecs, isFavorite, onToggle
               }}
               className="text-[11px] text-[#9d99c0] hover:text-[#5b4fcf] transition-colors flex items-center gap-0.5 w-full mt-1"
             >
-              <ChevronUp size={12} /> свернуть
+              <ChevronUp size={12} /> {t("collapse")}
             </button>
           )}
         </div>

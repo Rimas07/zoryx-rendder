@@ -9,14 +9,32 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin", "cyrillic"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Zoryx — Медицинские клиники в Праге",
-  description: "Zoryx — медицинский гид по Праге",
+  title:
+    "Zoryx — Medical Clinics in Prague · Клиники в Праге · Kliniky v Praze",
+  description:
+    "Find medical clinics in Prague · Медицинские клиники в Праге — поиск по специализации, языку и району · Lékařské kliniky v Praze dle specializace a jazyka",
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
-    title: "Zoryx — Медицинские клиники в Праге",
-    description: "Zoryx — медицинский гид по Праге",
+    title: "Zoryx — Medical Clinics in Prague",
+    description:
+      "Find medical clinics in Prague by specialization, language and district.",
+    url: "https://web.zoryx.app",
+    siteName: "Zoryx",
+    type: "website",
+    images: [
+      
+      {
+        url: "https://web.zoryx.app/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Zoryx — Medical Clinics in Prague",
+      },
+    ],
+  },
+  alternates: {
+    canonical: "https://web.zoryx.app",
   },
 };
 
