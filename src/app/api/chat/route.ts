@@ -43,12 +43,33 @@ function detectSpecKey(text: string): string | null {
     const lower = text.toLowerCase();
     let bestKey: string | null = null;
     let bestLen = 0;
+
+    // 1. Точное вхождение: "урология" есть в тексте → подходит для EN/CS
     for (const [searchStr, key] of reverseSpecMap) {
         if (lower.includes(searchStr) && searchStr.length > bestLen) {
             bestKey = key;
             bestLen = searchStr.length;
         }
     }
+
+    // 2. Префикс-совпадение (двустороннее) — работает на всех 4 языках:
+    // RU: "уролог" → "урология".startsWith("уролог") ✅
+    // UK: "уролог" → "урологія".startsWith("уролог") ✅
+    // CS: "urolog" → "urologie".startsWith("urolog") ✅
+    // EN: "urologist" → "urologist".startsWith("urology") ✅ (обратная проверка)
+    //     "dentist"   → "dentist".startsWith("dentistry") ✅
+    const words = lower.split(/\s+/).filter(w => w.length >= 5);
+    for (const word of words) {
+        for (const [searchStr, key] of reverseSpecMap) {
+            const fwd = searchStr.startsWith(word); // уролог → урология
+            const rev = word.startsWith(searchStr); // urologist → urology
+            if ((fwd || rev) && word.length > bestLen) {
+                bestKey = key;
+                bestLen = word.length;
+            }
+        }
+    }
+
     return bestKey;
 }
 
@@ -190,7 +211,7 @@ ${clinicList || 'Подходящих клиник не найдено.'}
 - Если список пустой — честно скажи что подходящих клиник не нашлось и предложи обратиться на сайт zoryx.app.
 - Учитывай предпочтения по языку врача из истории разговора.
 - Веди разговор ТОЛЬКО на ${langName} языке.
-- Последние две строки ответа ВСЕГДА пиши на русском языке точно в этом формате (даже если ведёшь беседу на другом языке):
+- В конце ответа ВСЕГДА добавляй эти две строки на русском языке — без исключений, даже если перечислил несколько клиник (выбери одну лучшую):
 **Рекомендуемая специализация: [название из списка]**
 **Рекомендуемая клиника: [точное название клиники из списка]**`
                     },
