@@ -8,6 +8,8 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"], display: "swap" });
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://web.zoryx.app';
+
 export const metadata: Metadata = {
   title:
     "Zoryx — Medical Clinics in Prague · Клиники в Праге · Kliniky v Praze",
@@ -20,13 +22,12 @@ export const metadata: Metadata = {
     title: "Zoryx — Medical Clinics in Prague",
     description:
       "Find medical clinics in Prague by specialization, language and district.",
-    url: "https://web.zoryx.app",
+    url: baseUrl,
     siteName: "Zoryx",
     type: "website",
     images: [
-      
       {
-        url: "https://web.zoryx.app/og-image.png",
+        url: `${baseUrl}/og-image.png`,
         width: 1200,
         height: 630,
         alt: "Zoryx — Medical Clinics in Prague",
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
     ],
   },
   alternates: {
-    canonical: "https://web.zoryx.app",
+    canonical: baseUrl,
   },
 };
 
