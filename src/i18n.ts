@@ -41,7 +41,9 @@ export const translations = {
     searchSpec: 'Search specialization...',
     chatThinking: 'Thinking...',
     chatInputPlaceholder: 'Describe your symptoms...',
-    collapse: 'collapse'
+    collapse: 'collapse',
+    filterLanguage: "Doctor's language",
+    filterDistrict: 'District',
   },
   cs: {
     searchPlaceholder: 'Hledat kliniku...',
@@ -83,7 +85,9 @@ export const translations = {
     searchSpec: 'Hledat specializaci...',
     chatThinking: 'Přemýšlím...',
     chatInputPlaceholder: 'Popište své příznaky...',
-    collapse: 'sbalit'
+    collapse: 'sbalit',
+    filterLanguage: 'Jazyk lékaře',
+    filterDistrict: 'Obvod Praha',
   },
   ru: {
     searchPlaceholder: 'Поиск клиники...',
@@ -125,7 +129,9 @@ export const translations = {
     searchSpec: 'Поиск специализации...',
     chatThinking: 'Думаю...',
     chatInputPlaceholder: 'Опишите симптомы...',
-    collapse: 'свернуть'
+    collapse: 'свернуть',
+    filterLanguage: 'Язык врача',
+    filterDistrict: 'Район Праги',
   },
   uk: {
     searchPlaceholder: 'Шукати клініку...',
@@ -167,7 +173,9 @@ export const translations = {
     searchSpec: 'Пошук спеціалізації...',
     chatThinking: 'Думаю...',
     chatInputPlaceholder: 'Опишіть симптоми...',
-    collapse: 'згорнути'
+    collapse: 'згорнути',
+    filterLanguage: 'Мова лікаря',
+    filterDistrict: 'Район Праги',
   },
 } satisfies Record<Lang, Record<string, string>>;
 
@@ -245,10 +253,40 @@ export const specTranslations: Record<string, Partial<Record<Lang, string>>> = {
   'Venerologie':                { en: 'Venereology',          ru: 'Венерология',           uk: 'Венерологія',           cs: 'Venerologie' },
   'Všeobecná chirurgie':        { en: 'General surgery',      ru: 'Общая хирургия',        uk: 'Загальна хірургія',     cs: 'Všeobecná chirurgie' },
   'non stop':                   { en: '24/7',                 ru: 'Круглосуточно',         uk: 'Цілодобово',            cs: 'Non-stop' },
+
+  // ПЛС — кириллица в Firebase, PLS (латиница) в i18n — разные строки
+  'ПЛС':                        { en: 'PLS',                  ru: 'ПЛС',                   uk: 'ПЛС',                   cs: 'PLS' },
+  'Samoplatce':                 { en: 'Self-pay',             ru: 'Самооплата',             uk: 'Самооплата',            cs: 'Samoplatce' },
+  'VZP':                        { en: 'VZP',                  ru: 'VZP',                   uk: 'VZP',                   cs: 'VZP' },
+  'PVZP':                       { en: 'PVZP',                 ru: 'PVZP',                  uk: 'PVZP',                  cs: 'PVZP' },
 };
 
+// Нормализованный кэш для быстрого поиска (строится один раз)
+// Ключи нормализуются: NFC + нижний регистр + подчёркивания → пробелы
+const _normalizedSpecMap = new Map<string, Partial<Record<Lang, string>>>();
+for (const [key, translations] of Object.entries(specTranslations)) {
+  _normalizedSpecMap.set(
+    key.trim().normalize('NFC').toLowerCase().replace(/_/g, ' ').replace(/\s+/g, ' '),
+    translations
+  );
+}
+
 export function translateSpec(spec: string, lang: Lang): string {
-  return specTranslations[spec]?.[lang] ?? spec.replace(/_/g, ' ');
+  const trimmed = spec.trim();
+
+  // 1. Прямой поиск
+  if (specTranslations[trimmed]?.[lang]) return specTranslations[trimmed][lang]!;
+
+  // 2. Firebase хранит ключи с подчёркиванием вместо пробелов
+  const withSpaces = trimmed.replace(/_/g, ' ');
+  if (specTranslations[withSpaces]?.[lang]) return specTranslations[withSpaces][lang]!;
+
+  // 3. Нормализованный поиск: NFC + lowercase + _ → пробел
+  const normalized = trimmed.normalize('NFC').toLowerCase().replace(/_/g, ' ').replace(/\s+/g, ' ');
+  const found = _normalizedSpecMap.get(normalized);
+  if (found?.[lang]) return found[lang]!;
+
+  return withSpaces;
 }
 
 export type TKey = keyof typeof translations.en;

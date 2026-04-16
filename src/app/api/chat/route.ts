@@ -25,6 +25,32 @@ for (const [key, langs] of Object.entries(specTranslations)) {
     }
 }
 
+// Псевдонимы для слов которые не совпадают по префиксу
+// (нутри-о-лог ≠ нутри-ц-иология, окулист ≠ офтальмология и т.д.)
+const manualAliases: [string, string][] = [
+    ['нутриолог',    'Nutriční_terapie'],
+    ['нутрициолог',  'Nutriční_terapie'],
+    ['диетолог',     'Nutriční_terapie'],
+    ['nutritionist', 'Nutriční_terapie'],
+    ['dietitian',    'Nutriční_terapie'],
+    ['окулист',      'Oftalmologie'],
+    ['oculist',      'Oftalmologie'],
+    ['лор',          'ORL'],
+    ['ent',          'ORL'],
+    ['лікар',        'Praktický_lékař_pro_dospělé'],
+    ['хирург',       'Všeobecná_chirurgie'],
+    ['surgeon',      'Všeobecná_chirurgie'],
+    ['педиатр',      'Praktický_lékař_pro_děti'],
+    ['педіатр',      'Praktický_lékař_pro_děti'],
+    ['pediatrician', 'Praktický_lékař_pro_děti'],
+    ['скорая',       'Urgentní_příjem'],
+    ['urgent',       'Urgentní_příjem'],
+    ['emergency',    'Urgentní_příjem'],
+];
+for (const [alias, key] of manualAliases) {
+    reverseSpecMap.set(alias, key);
+}
+
 /** Извлекает "Praha N" из текстов разговора (поддерживает RU/UK/CS/EN написание) */
 function extractDistrict(texts: string[]): string | null {
     for (const text of texts) {
@@ -98,7 +124,7 @@ export async function POST(req: Request) {
         reset: limit && now < limit.reset ? limit.reset : now + 60_000,
     });
 
-    const { message, history, lang } = await req.json();
+    const { message, history, lang, activeLangs, activeDistrict } = await req.json();
 
     // Загружаем клиники с кэшем (теперь храним полные объекты)
     if (!clinicsCache || Date.now() - clinicsCache.ts > CACHE_TTL) {
@@ -147,30 +173,62 @@ export async function POST(req: Request) {
     const specKey = detectSpecKey(userTexts.join(' '));
 
     // 3. Фильтруем клиники по специализации
-    // Используем английский перевод как общий знаменатель —
-    // в Firebase один ключ может быть 'Urgentni_příjem', другой 'Urgentní příjem',
-    // оба имеют одинаковый en: 'Emergency', поэтому сравниваем по нему
+    // Ищем по точному ключу И по схожим русским/украинским переводам —
+    // чтобы "педиатр" находил и Pediatrie, и Praktický_lékař_pro_děti
     let filtered = allClinics;
     if (specKey) {
         const targetEn = specTranslations[specKey]?.en;
+        const targetRu = specTranslations[specKey]?.ru?.toLowerCase();
+        const targetUk = specTranslations[specKey]?.uk?.toLowerCase();
+        const userWord = userTexts.join(' ').toLowerCase();
+
         const bySpec = allClinics.filter(c =>
-            c.specializations.some(s =>
-                s === specKey ||
-                (targetEn && specTranslations[s]?.en === targetEn)
-            )
+            c.specializations.some(s => {
+                if (s === specKey) return true;
+                const tr = specTranslations[s.replace(/ /g, '_')] ?? specTranslations[s];
+                if (!tr) return false;
+                // Совпадение по английскому переводу
+                if (targetEn && tr.en === targetEn) return true;
+                // Совпадение по русскому/украинскому — слово из запроса является
+                // префиксом перевода (педиатр → педиатрия, педиатр → педиатр)
+                const ruTr = tr.ru?.toLowerCase() ?? '';
+                const ukTr = tr.uk?.toLowerCase() ?? '';
+                for (const word of userWord.split(/\s+/).filter(w => w.length >= 5)) {
+                    if (ruTr.startsWith(word) || word.startsWith(ruTr.slice(0, 5))) return true;
+                    if (ukTr.startsWith(word) || word.startsWith(ukTr.slice(0, 5))) return true;
+                    if (targetRu && (ruTr.startsWith(targetRu.slice(0, 5)))) return true;
+                    if (targetUk && (ukTr.startsWith(targetUk.slice(0, 5)))) return true;
+                }
+                return false;
+            })
         );
         if (bySpec.length > 0) filtered = bySpec;
     }
 
-    // 4. Фильтруем по району
+    // 4. Фильтруем по языкам из UI (если пользователь выбрал в фильтрах)
+    const safeLangs = Array.isArray(activeLangs)
+        ? (activeLangs as unknown[]).filter((l): l is string => typeof l === 'string' && l.length < 50)
+        : [];
+    if (safeLangs.length > 0) {
+        const byLang = filtered.filter(c =>
+            safeLangs.some(l => c.languages.some(cl => cl.toLowerCase() === l.toLowerCase()))
+        );
+        if (byLang.length > 0) filtered = byLang;
+    }
+
+    // 5. Фильтруем по району из UI (приоритет над текстом чата)
+    const safeDistrict = typeof activeDistrict === 'string' && activeDistrict.length < 20
+        ? activeDistrict
+        : null;
+    const effectiveDistrict = safeDistrict ?? district;
+
     let districtNote = '';
-    if (district) {
-        const byDistrict = filtered.filter(c => c.address.includes(district));
+    if (effectiveDistrict) {
+        const byDistrict = filtered.filter(c => c.address.includes(effectiveDistrict));
         if (byDistrict.length > 0) {
             filtered = byDistrict;
         } else {
-            // Клиник в этом районе нет — скажем GPT об этом явно
-            districtNote = `\nВАЖНО: В базе нет клиник в ${district} с данной специализацией. Сообщи об этом пользователю и предложи ближайший вариант из списка ниже.`;
+            districtNote = `\nВАЖНО: В базе нет клиник ИМЕННО в ${effectiveDistrict} с данной специализацией. Сообщи об этом одной фразой, затем ОБЯЗАТЕЛЬНО порекомендуй лучшую клинику из списка ниже — не отказывайся от рекомендации.`;
         }
     }
 
@@ -183,24 +241,7 @@ export async function POST(req: Request) {
     };
     const langName = langNames[lang as string] || 'русском';
 
-    const abortController = new AbortController();
-    const timeout = setTimeout(() => abortController.abort(), 15000);
-
-    let response: Response;
-    try {
-        response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            signal: abortController.signal,
-            headers: {
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                model: 'gpt-4o-mini',
-                messages: [
-                    {
-                        role: 'system',
-                        content: `Ты медицинский помощник сайта Zoryx — каталога клиник в Праге.
+    const systemPrompt = `Ты медицинский помощник сайта Zoryx — каталога клиник в Праге.
 Доступные специализации: ${specializations.join(', ')}.
 ${districtNote}
 Клиники, подходящие под запрос пользователя (уже отфильтрованы):
@@ -213,10 +254,27 @@ ${clinicList || 'Подходящих клиник не найдено.'}
 - Веди разговор ТОЛЬКО на ${langName} языке.
 - В конце ответа ВСЕГДА добавляй эти две строки на русском языке — без исключений, даже если перечислил несколько клиник (выбери одну лучшую):
 **Рекомендуемая специализация: [название из списка]**
-**Рекомендуемая клиника: [точное название клиники из списка]**`
-                    },
+**Рекомендуемая клиника: [точное название клиники из списка]**`;
+
+    const abortController = new AbortController();
+    const timeout = setTimeout(() => abortController.abort(), 20000);
+
+    let openAIRes: Response;
+    try {
+        openAIRes = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            signal: abortController.signal,
+            headers: {
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                stream: true,
+                messages: [
+                    { role: 'system', content: systemPrompt },
                     ...safeHistory,
-                    { role: 'user', content: cleanMessage }
+                    { role: 'user', content: cleanMessage },
                 ],
                 max_tokens: 800,
             }),
@@ -228,17 +286,70 @@ ${clinicList || 'Подходящих клиник не найдено.'}
 
     clearTimeout(timeout);
 
-    if (!response.ok) {
-        console.error(`OpenAI error: ${response.status} ${response.statusText}`);
+    if (!openAIRes.ok) {
+        console.error(`OpenAI error: ${openAIRes.status} ${openAIRes.statusText}`);
         return Response.json({ error: 'AI service unavailable' }, { status: 503 });
     }
 
-    const data = await response.json();
-    const answer = data.choices?.[0]?.message?.content;
-    if (!answer) {
-        console.error('OpenAI unexpected response:', JSON.stringify(data));
-        return Response.json({ error: 'AI service unavailable' }, { status: 503 });
-    }
+    // Стримим ответ клиенту, в конце добавляем метаданные (clinicId, specKey)
+    const encoder = new TextEncoder();
+    const readableStream = new ReadableStream({
+        async start(controller) {
+            const reader = openAIRes.body!.getReader();
+            const decoder = new TextDecoder();
+            let fullAnswer = '';
 
-    return Response.json({ answer });
+            try {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    for (const line of chunk.split('\n')) {
+                        if (!line.startsWith('data: ')) continue;
+                        const data = line.slice(6).trim();
+                        if (data === '[DONE]') continue;
+                        try {
+                            const parsed = JSON.parse(data);
+                            const text: string = parsed.choices?.[0]?.delta?.content ?? '';
+                            if (text) {
+                                fullAnswer += text;
+                                controller.enqueue(encoder.encode(text));
+                            }
+                        } catch { /* неполный JSON в чанке — пропускаем */ }
+                    }
+                }
+            } finally {
+                reader.releaseLock();
+            }
+
+            // Извлекаем clinicId из полного накопленного ответа
+            let clinicId: string | null = null;
+            const nameMatch = fullAnswer.match(/Рекомендуемая клиника:\s*\*?\*?([^\n*]+)/);
+            if (nameMatch) {
+                const name = nameMatch[1].trim().toLowerCase();
+                const found = filtered.find(c =>
+                    c.name.toLowerCase().includes(name) ||
+                    name.includes(c.name.toLowerCase())
+                );
+                clinicId = found?.id ?? null;
+            }
+            if (!clinicId && filtered.length === 1 && filtered !== allClinics) {
+                clinicId = filtered[0].id;
+            }
+
+            // Отправляем метаданные последним чанком
+            controller.enqueue(
+                encoder.encode(`\n__META__${JSON.stringify({ clinicId, specKey })}`)
+            );
+            controller.close();
+        },
+    });
+
+    return new Response(readableStream, {
+        headers: {
+            'Content-Type': 'text/plain; charset=utf-8',
+            'Cache-Control': 'no-cache',
+        },
+    });
 }

@@ -50,12 +50,43 @@ export function ClinicsLayout({
     ])
   );
 
+  // Уникальные языки из всех клиник (не зависят от поиска)
+  const allLanguages = [...new Set(initialClinics.flatMap((c) => c.languages))]
+    .filter(Boolean)
+    .sort();
+
+  // Уникальные районы Праги из адресов
+  const allDistricts = [
+    ...new Set(
+      initialClinics
+        .map((c) => {
+          const m = c.address.match(/Praha\s*(\d+)/i);
+          return m ? `Praha ${m[1]}` : null;
+        })
+        .filter(Boolean) as string[]
+    ),
+  ].sort((a, b) => {
+    const n = (s: string) => parseInt(s.match(/\d+/)?.[0] ?? "0");
+    return n(a) - n(b);
+  });
+
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(
     initialSelectedClinic
   );
   const [showFilters, setShowFilters] = useState(false);
+
+  // Специализации
   const [pendingSpecs, setPendingSpecs] = useState<string[]>([]);
   const [activeSpecs, setActiveSpecs] = useState<string[]>([]);
+
+  // Языки
+  const [pendingLangs, setPendingLangs] = useState<string[]>([]);
+  const [activeLangs, setActiveLangs] = useState<string[]>([]);
+
+  // Район
+  const [pendingDistrict, setPendingDistrict] = useState<string | null>(null);
+  const [activeDistrict, setActiveDistrict] = useState<string | null>(null);
+
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -79,16 +110,29 @@ export function ClinicsLayout({
       prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
     );
 
+  const handleToggleLang = (l: string) =>
+    setPendingLangs((prev) =>
+      prev.includes(l) ? prev.filter((x) => x !== l) : [...prev, l]
+    );
+
   const handleApply = () => {
     setActiveSpecs(pendingSpecs);
+    setActiveLangs(pendingLangs);
+    setActiveDistrict(pendingDistrict);
     setShowFilters(false);
   };
+
   const handleReset = () => {
     setPendingSpecs([]);
     setActiveSpecs([]);
+    setPendingLangs([]);
+    setActiveLangs([]);
+    setPendingDistrict(null);
+    setActiveDistrict(null);
   };
 
-  const filtered =
+  // Фильтрация по специализации
+  const filteredBySpec =
     activeSpecs.length === 0
       ? clinics
       : clinics.filter((c) =>
@@ -99,9 +143,28 @@ export function ClinicsLayout({
           )
         );
 
+  // Фильтрация по языку
+  const filteredByLang =
+    activeLangs.length === 0
+      ? filteredBySpec
+      : filteredBySpec.filter((c) =>
+          activeLangs.some((l) =>
+            c.languages.some((cl) => cl.toLowerCase() === l.toLowerCase())
+          )
+        );
+
+  // Фильтрация по району
+  const filtered =
+    !activeDistrict
+      ? filteredByLang
+      : filteredByLang.filter((c) => c.address.includes(activeDistrict));
+
   const displayed = showFavoritesOnly
     ? filtered.filter((c) => favorites.has(c.id))
     : filtered;
+
+  const hasActiveFilters =
+    activeSpecs.length > 0 || activeLangs.length > 0 || !!activeDistrict;
 
   const [openWithMap, setOpenWithMap] = useState(false);
   const [visibleCount, setVisibleCount] = useState(20);
@@ -111,10 +174,8 @@ export function ClinicsLayout({
   const allBtnRef = useRef<HTMLButtonElement>(null);
   const favBtnRef = useRef<HTMLButtonElement>(null);
 
-  // Сбрасываем счётчик при изменении фильтров/поиска
   useEffect(() => { setVisibleCount(20); }, [displayed.length]);
 
-  // Анимация при смене фильтра/поиска — все карточки
   useEffect(() => {
     const id = requestAnimationFrame(() => {
       if (!listRef.current) return;
@@ -128,7 +189,6 @@ export function ClinicsLayout({
     return () => cancelAnimationFrame(id);
   }, [displayed.length]);
 
-  // Анимация при подгрузке следующей порции — только новые карточки
   useEffect(() => {
     if (!listRef.current) return;
     const cards = Array.from(listRef.current.querySelectorAll(':scope > div'));
@@ -140,24 +200,21 @@ export function ClinicsLayout({
     );
   }, [visibleCount]);
 
-  // Анимация chips при появлении фильтров
   useEffect(() => {
-    if (!chipsRef.current || activeSpecs.length === 0) return;
+    if (!chipsRef.current || !hasActiveFilters) return;
     const chips = chipsRef.current.querySelectorAll(':scope > *');
     gsap.fromTo(chips,
       { opacity: 0, scale: 0.75 },
       { opacity: 1, scale: 1, duration: 0.22, stagger: 0.04, ease: 'back.out(2)' }
     );
-  }, [activeSpecs.length]);
+  }, [activeSpecs.length, activeLangs.length, activeDistrict]);
 
-  // Tap-анимация на кнопках All / Избранное
   const handleToggleFavoritesOnly = (value: boolean) => {
     setShowFavoritesOnly(value);
     const target = value ? favBtnRef.current : allBtnRef.current;
     if (target) gsap.fromTo(target, { scale: 0.88 }, { scale: 1, duration: 0.28, ease: 'back.out(2.5)' });
   };
 
-  // Подгружаем ещё 20 когда пользователь доскроллил до низа
   useEffect(() => {
     const el = loaderRef.current;
     if (!el) return;
@@ -168,7 +225,6 @@ export function ClinicsLayout({
     return () => observer.disconnect();
   }, []);
 
-  // Слушаем кнопку "назад" в браузере
   useEffect(() => {
     const handlePopState = () => {
       if (!window.location.pathname.startsWith('/clinic/')) {
@@ -199,6 +255,12 @@ export function ClinicsLayout({
           selected={pendingSpecs}
           specCounts={specCounts}
           onToggle={handleToggleSpec}
+          langs={allLanguages}
+          selectedLangs={pendingLangs}
+          onToggleLang={handleToggleLang}
+          districts={allDistricts}
+          selectedDistrict={pendingDistrict}
+          onSelectDistrict={setPendingDistrict}
           onApply={handleApply}
           onReset={handleReset}
           onClose={() => setShowFilters(false)}
@@ -221,11 +283,11 @@ export function ClinicsLayout({
               <Button
                 variant="outline"
                 size="icon"
-                className={`filter-btn${
-                  activeSpecs.length > 0 ? " active" : ""
-                }`}
+                className={`filter-btn${hasActiveFilters ? " active" : ""}`}
                 onClick={() => {
                   setPendingSpecs(activeSpecs);
+                  setPendingLangs(activeLangs);
+                  setPendingDistrict(activeDistrict);
                   setShowFilters(true);
                 }}
               >
@@ -270,15 +332,12 @@ export function ClinicsLayout({
             </button>
           </div>
 
-          {activeSpecs.length > 0 && (
+          {/* Active filter chips */}
+          {hasActiveFilters && (
             <div className="active-filters">
               <div ref={chipsRef} className="active-filters-chips">
                 {activeSpecs.map((s) => (
-                  <Badge
-                    key={s}
-                    variant="secondary"
-                    className="gap-1 pr-1 cursor-default"
-                  >
+                  <Badge key={s} variant="secondary" className="gap-1 pr-1 cursor-default">
                     {tSpec(s)}
                     {specCounts[s] !== undefined && (
                       <span className="bg-[#5b4fcf] text-white text-[10px] font-semibold rounded-full px-1.5 py-0 leading-4">
@@ -295,12 +354,36 @@ export function ClinicsLayout({
                     </button>
                   </Badge>
                 ))}
+                {activeLangs.map((l) => (
+                  <Badge key={l} variant="secondary" className="gap-1 pr-1 cursor-default">
+                    {l}
+                    <button
+                      className="ml-1 hover:text-[#5b4fcf] transition-colors"
+                      onClick={() =>
+                        setActiveLangs((prev) => prev.filter((x) => x !== l))
+                      }
+                    >
+                      <X size={11} />
+                    </button>
+                  </Badge>
+                ))}
+                {activeDistrict && (
+                  <Badge variant="secondary" className="gap-1 pr-1 cursor-default">
+                    {activeDistrict}
+                    <button
+                      className="ml-1 hover:text-[#5b4fcf] transition-colors"
+                      onClick={() => setActiveDistrict(null)}
+                    >
+                      <X size={11} />
+                    </button>
+                  </Badge>
+                )}
               </div>
               <Button
                 variant="outline"
                 size="icon"
                 className="filters-collapse-btn shrink-0"
-                onClick={() => setActiveSpecs([])}
+                onClick={handleReset}
               >
                 <ChevronLeft size={18} />
               </Button>
@@ -356,21 +439,14 @@ export function ClinicsLayout({
       </div>
       <ChatBot
         specializations={allSpecs}
-        clinics={initialClinics.map((c) => ({
-          id: c.id,
-          name: c.name,
-          specializations: c.specializations,
-          languages: c.languages,
-          address: c.address,
-        }))}
+        activeLangs={activeLangs}
+        activeDistrict={activeDistrict}
         onSpecializationSelect={(spec) => {
           setActiveSpecs((prev) => prev.includes(spec) ? prev : [...prev, spec]);
         }}
         onClinicSelect={(id) => {
           const clinic = clinics.find((c) => c.id === id);
-          if (clinic) {
-            openClinic(clinic);
-          }
+          if (clinic) openClinic(clinic);
         }}
       />
     </div>

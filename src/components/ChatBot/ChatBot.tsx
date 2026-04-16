@@ -5,15 +5,14 @@ import { gsap } from "gsap";
 import { MessageCircle, X, Send } from "lucide-react";
 import { useLang } from "../../contexts/LangContext";
 interface Props {
-
   specializations: string[];
-  clinics: { id: string; name: string; specializations: string[]; languages: string[]; address: string }[];
+  activeLangs: string[];
+  activeDistrict: string | null;
   onSpecializationSelect?: (spec: string) => void;
   onClinicSelect?: (id: string) => void;
-  
 }
 
-export function ChatBot({ specializations, clinics, onSpecializationSelect, onClinicSelect }: Props) {
+export function ChatBot({ specializations, activeLangs, activeDistrict, onSpecializationSelect, onClinicSelect }: Props) {
   const [open, setOpen] = useState(false);
   const { t, lang } = useLang();
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -80,50 +79,74 @@ export function ChatBot({ specializations, clinics, onSpecializationSelect, onCl
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-       body: JSON.stringify({ message: userMsg, history, lang }),
+        body: JSON.stringify({ message: userMsg, history, lang, activeLangs, activeDistrict }),
       });
-      const data = await res.json();
-      if (!res.ok || data.error) {
+
+      if (!res.ok || !res.body) {
         setMessages((prev) => [...prev, { role: "bot", text: t("chatError") }]);
         setLoading(false);
         return;
       }
-      const cleanAnswer = data.answer
-        .replace(/\*?\*?Рекомендуемая специализация:[^\n]*/g, '')
-        .replace(/\*?\*?Рекомендуемая клиника:[^\n]*/g, '')
-        .trim();
-      setMessages((prev) => [...prev, { role: "bot", text: cleanAnswer }]);
 
-      // Применяем специализацию
-      const specMatch = data.answer.match(
-        /Рекомендуемая специализация:\s*\*?\*?([^\n*]+)/
-      );
-      if (specMatch && onSpecializationSelect) {
-        const spec = specializations.find((s) =>
-          s.toLowerCase().includes(specMatch[1].trim().toLowerCase())
-        );
-        if (spec) onSpecializationSelect(spec);
-      }
+      // Добавляем пустое сообщение бота — будем дополнять по мере стриминга
+      setLoading(false);
+      setMessages((prev) => [...prev, { role: "bot", text: "" }]);
 
-      // Открываем рекомендуемую клинику
-      const clinicMatch = data.answer.match(
-        /Рекомендуемая клиника:\s*\*?\*?([^\n*]+)/
-      );
-      if (clinicMatch && onClinicSelect) {
-        const clinicName = clinicMatch[1].trim().toLowerCase();
-        const found = clinics.find((c) =>
-          c.name.toLowerCase().includes(clinicName) ||
-          clinicName.includes(c.name.toLowerCase())
-        );
-        if (found) onClinicSelect(found.id);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+
+        if (chunk.includes('__META__')) {
+          // Последний чанк содержит метаданные
+          const splitIdx = chunk.indexOf('__META__');
+          buffer += chunk.slice(0, splitIdx);
+
+          const cleanText = buffer
+            .replace(/\*?\*?Рекомендуемая специализация:[^\n]*/g, '')
+            .replace(/\*?\*?Рекомендуемая клиника:[^\n]*/g, '')
+            .trim();
+
+          setMessages((prev) => {
+            const updated = [...prev];
+            updated[updated.length - 1] = { role: "bot", text: cleanText };
+            return updated;
+          });
+
+          try {
+            const meta = JSON.parse(chunk.slice(splitIdx + 8).trim());
+            if (meta.clinicId && onClinicSelect) onClinicSelect(meta.clinicId);
+            if (meta.specKey && onSpecializationSelect) {
+              const spec = specializations.find((s) =>
+                s.toLowerCase().replace(/_/g, ' ').includes(
+                  (meta.specKey as string).toLowerCase().replace(/_/g, ' ')
+                )
+              );
+              if (spec) onSpecializationSelect(spec);
+            }
+          } catch { /* некорректный JSON метаданных — игнорируем */ }
+        } else {
+          // Обычный текстовый чанк — дописываем в сообщение.
+          // Обрезаем всё начиная с мета-строк (они всегда в конце ответа GPT)
+          buffer += chunk;
+          const metaIdx = buffer.search(/\n\*{0,2}Рекомендуемая\s/);
+          const displayText = metaIdx >= 0 ? buffer.slice(0, metaIdx).trim() : buffer;
+          setMessages((prev) => {
+            const updated = [...prev];
+            updated[updated.length - 1] = { role: "bot", text: displayText };
+            return updated;
+          });
+        }
       }
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        { role: "bot", text: t("chatError") },
-      ]);
+      setMessages((prev) => [...prev, { role: "bot", text: t("chatError") }]);
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
