@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   ].filter(Boolean).join(' · ');
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://web.zoryx.app';
-  const image = clinic.photoUrl ?? `${baseUrl}/og-image.png`;
+  const image = `${baseUrl}/og-image.png`;
   const url = `${baseUrl}/clinic/${clinic.id}`;
 
   return {
